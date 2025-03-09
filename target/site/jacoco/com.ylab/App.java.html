@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.ylab.kalenyuk.finance-app</a> &gt; <a href="index.source.html" class="el_package">com.ylab</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package com.ylab;
+
+import com.ylab.entity.User;
+import com.ylab.management.*;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+<span class="nc" id="L9">public class App {</span>
+    private static final String LINE_SEPARATOR = &quot;------------------------&quot;;
+    private static final String ROOT_MENU = &quot;Выберите пункт меню:\n&quot; +
+            &quot;1. Главное меню\n&quot; +
+            &quot;2. Меню пользователя\n&quot; +
+            &quot;3. Администрирование\n&quot; +
+            &quot;0. Выход&quot;;
+    private static final String TOP_MENU = &quot;Выберите пункт меню:\n&quot; +
+            &quot;1. Регистрация\n&quot; +
+            &quot;2. Вход\n&quot; +
+            &quot;3. Выход&quot;;
+    private static final String USER_MENU = &quot;Выберите пункт меню:\n&quot; +
+            &quot;1. Профиль\n&quot; +
+            &quot;2. Финансы\n&quot; +
+            &quot;3. Бюджет\n&quot; +
+            &quot;4. Цели\n&quot; +
+            &quot;5. Статистика\n&quot; +
+            &quot;%s&quot; +
+            &quot;%d. Выход&quot;;
+    private static final String EDIT_MENU = &quot;Выберите пункт меню:\n&quot; +
+            &quot;1. Изменить имя\n&quot; +
+            &quot;2. Изменить пароль\n&quot; +
+            &quot;3. Удалить аккаунт\n&quot; +
+            &quot;0. Назад&quot;;
+    private static final String TRANSACTIONS_MENU = &quot;Выберите пункт меню:\n&quot; +
+            &quot;1. Добавить\n&quot; +
+            &quot;2. Редактировать\n&quot; +
+            &quot;3. Удалить\n&quot; +
+            &quot;4. Просмотр\n&quot; +
+            &quot;5. Уведомления\n&quot; +
+            &quot;0. Назад&quot;;
+
+    public static void main(String[] args) {
+<span class="fc" id="L42">        UserManager userManager = new UserManager();</span>
+<span class="fc" id="L43">        Scanner scanner = new Scanner(System.in);</span>
+
+        while (true) {
+<span class="fc" id="L46">            displayMenu(ROOT_MENU);</span>
+<span class="fc" id="L47">            int choice = getUserChoice(scanner);</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (choice == 0) break;</span>
+
+<span class="nc bnc" id="L50" title="All 4 branches missed.">            switch (choice) {</span>
+<span class="nc" id="L51">                case 1 -&gt; handleTopMenu(userManager, scanner);</span>
+<span class="nc" id="L52">                case 2 -&gt; handleUserMenu(userManager, scanner);</span>
+<span class="nc" id="L53">                case 3 -&gt; handleAdminMenu(userManager, scanner);</span>
+<span class="nc" id="L54">                default -&gt; System.out.println(&quot;Неверный выбор&quot;);</span>
+            }
+<span class="nc" id="L56">        }</span>
+<span class="fc" id="L57">        scanner.close();</span>
+<span class="fc" id="L58">        System.out.println(&quot;До встречи!&quot;);</span>
+<span class="fc" id="L59">    }</span>
+
+    // Отображение меню и получение выбора пользователя
+    private static void displayMenu(String menu) {
+<span class="fc" id="L63">        System.out.println(LINE_SEPARATOR);</span>
+<span class="fc" id="L64">        System.out.println(menu);</span>
+<span class="fc" id="L65">        System.out.println(LINE_SEPARATOR);</span>
+<span class="fc" id="L66">    }</span>
+
+    private static int getUserChoice(Scanner scanner) {
+        try {
+<span class="fc" id="L70">            int choice = scanner.nextInt();</span>
+<span class="fc" id="L71">            scanner.nextLine(); // Очистка буфера</span>
+<span class="fc" id="L72">            return choice;</span>
+<span class="nc" id="L73">        } catch (InputMismatchException e) {</span>
+<span class="nc" id="L74">            System.out.println(&quot;Ошибка: введите число&quot;);</span>
+<span class="nc" id="L75">            scanner.nextLine();</span>
+<span class="nc" id="L76">            return -1; // Неверный ввод</span>
+        }
+    }
+
+    // Обработка главного меню (регистрация и вход)
+    protected static void handleTopMenu(UserManager userManager, Scanner scanner) {
+<span class="fc" id="L82">        displayMenu(TOP_MENU);</span>
+<span class="fc" id="L83">        int choice = getUserChoice(scanner);</span>
+<span class="pc bpc" id="L84" title="2 of 4 branches missed.">        switch (choice) {</span>
+            case 1 -&gt; {
+<span class="fc" id="L86">                System.out.println(&quot;Регистрация:&quot;);</span>
+<span class="fc" id="L87">                userManager.registration();</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">                if (userManager.getCurrentUser() != null) {</span>
+<span class="nc" id="L89">                    showUserMenu(userManager, scanner);</span>
+                }
+            }
+            case 2 -&gt; {
+<span class="fc" id="L93">                System.out.println(&quot;Вход:&quot;);</span>
+<span class="fc" id="L94">                userManager.authentication();</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">                if (userManager.getCurrentUser() != null) {</span>
+<span class="nc" id="L96">                    showUserMenu(userManager, scanner);</span>
+                }
+            }
+<span class="nc" id="L99">            case 3 -&gt; System.exit(0);</span>
+<span class="nc" id="L100">            default -&gt; System.out.println(&quot;Неверный выбор&quot;);</span>
+        }
+<span class="fc" id="L102">    }</span>
+
+    // Обработка пользовательского меню
+    protected static void handleUserMenu(UserManager userManager, Scanner scanner) {
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if (userManager.getCurrentUser() == null) {</span>
+<span class="fc" id="L107">            System.out.println(&quot;Сначала войдите в систему&quot;);</span>
+<span class="fc" id="L108">            return;</span>
+        }
+<span class="nc" id="L110">        showUserMenu(userManager, scanner);</span>
+<span class="nc" id="L111">    }</span>
+
+    // Обработка меню администрирования
+    protected static void handleAdminMenu(UserManager userManager, Scanner scanner) {
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (userManager.getCurrentUser() == null) {</span>
+<span class="fc" id="L116">            System.out.println(&quot;Сначала войдите в систему&quot;);</span>
+<span class="fc" id="L117">            return;</span>
+        }
+<span class="nc" id="L119">        TransactionManager transactionManager = new TransactionManager(userManager.getCurrentUser());</span>
+<span class="nc" id="L120">        AdminManager adminManager = new AdminManager(userManager, transactionManager, userManager.getCurrentUser());</span>
+<span class="nc" id="L121">        adminManager.manageAdminFunctions();</span>
+<span class="nc" id="L122">    }</span>
+
+    // Пользовательское меню
+    protected static void showUserMenu(UserManager userManager, Scanner scanner) {
+<span class="fc" id="L126">        TransactionManager transactionManager = new TransactionManager(userManager.getCurrentUser());</span>
+<span class="fc" id="L127">        BudgetManager budgetManager = new BudgetManager(userManager.getCurrentUser(), transactionManager);</span>
+<span class="fc" id="L128">        GoalManager goalManager = new GoalManager(userManager.getCurrentUser(), transactionManager);</span>
+<span class="fc" id="L129">        StatisticsManager statisticsManager = new StatisticsManager(userManager.getCurrentUser(), transactionManager);</span>
+<span class="fc" id="L130">        NotificationManager notificationManager = new NotificationManager(userManager.getCurrentUser(), transactionManager);</span>
+<span class="fc" id="L131">        AdminManager adminManager = new AdminManager(userManager, transactionManager, userManager.getCurrentUser());</span>
+
+<span class="fc" id="L133">        User currentUser = userManager.getCurrentUser();</span>
+<span class="fc" id="L134">        boolean isAdmin = currentUser.isAdmin();</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        String adminOption = isAdmin ? &quot;6. Администрирование\n&quot; : &quot;&quot;;</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        int exitOption = isAdmin ? 7 : 6;</span>
+<span class="fc" id="L137">        String formattedUserMenu = String.format(USER_MENU, adminOption, exitOption);</span>
+
+        while (true) {
+<span class="fc" id="L140">            System.out.println(&quot;Добро пожаловать, &quot; + currentUser.getUsername() + &quot;!&quot;);</span>
+<span class="fc" id="L141">            displayMenu(formattedUserMenu);</span>
+<span class="fc" id="L142">            int choice = getUserChoice(scanner);</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            if (choice == exitOption) break;</span>
+
+<span class="pc bpc" id="L145" title="6 of 7 branches missed.">            switch (choice) {</span>
+<span class="fc" id="L146">                case 1 -&gt; handleProfileMenu(userManager, scanner);</span>
+<span class="nc" id="L147">                case 2 -&gt; handleTransactionsMenu(transactionManager, notificationManager, scanner);</span>
+<span class="nc" id="L148">                case 3 -&gt; budgetManager.manageBudget();</span>
+<span class="nc" id="L149">                case 4 -&gt; goalManager.manageGoals();</span>
+<span class="nc" id="L150">                case 5 -&gt; statisticsManager.showStatistics();</span>
+                case 6 -&gt; {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                    if (isAdmin) adminManager.manageAdminFunctions();</span>
+<span class="nc" id="L153">                    else System.out.println(&quot;Неверный выбор&quot;);</span>
+<span class="nc" id="L154">                }</span>
+<span class="nc" id="L155">                default -&gt; System.out.println(&quot;Неверный выбор&quot;);</span>
+            }
+<span class="fc" id="L157">        }</span>
+<span class="fc" id="L158">    }</span>
+
+    // Меню профиля
+    protected static void handleProfileMenu(UserManager userManager, Scanner scanner) {
+<span class="fc" id="L162">        User currentUser = userManager.getCurrentUser();</span>
+<span class="fc" id="L163">        System.out.println(&quot;Профиль:&quot;);</span>
+<span class="fc" id="L164">        System.out.println(&quot;Email: &quot; + currentUser.getEmail());</span>
+<span class="fc" id="L165">        System.out.println(&quot;Имя: &quot; + currentUser.getUsername());</span>
+<span class="fc" id="L166">        displayMenu(EDIT_MENU);</span>
+<span class="fc" id="L167">        int choice = getUserChoice(scanner);</span>
+
+<span class="pc bpc" id="L169" title="3 of 5 branches missed.">        switch (choice) {</span>
+<span class="fc" id="L170">            case 0 -&gt; {}</span>
+<span class="fc" id="L171">            case 1 -&gt; userManager.editNameUser(currentUser.getEmail());</span>
+<span class="nc" id="L172">            case 2 -&gt; userManager.editPasswordUser(currentUser.getEmail());</span>
+            case 3 -&gt; {
+<span class="nc" id="L174">                userManager.removeUser(currentUser.getEmail());</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">                if (userManager.getCurrentUser() == null) return;</span>
+            }
+<span class="nc" id="L177">            default -&gt; System.out.println(&quot;Неверный выбор&quot;);</span>
+        }
+<span class="fc" id="L179">    }</span>
+
+    // Меню транзакций
+    protected static void handleTransactionsMenu(TransactionManager transactionManager,
+                                               NotificationManager notificationManager,
+                                               Scanner scanner) {
+<span class="fc" id="L185">        displayMenu(TRANSACTIONS_MENU);</span>
+<span class="fc" id="L186">        int choice = getUserChoice(scanner);</span>
+
+<span class="pc bpc" id="L188" title="6 of 7 branches missed.">        switch (choice) {</span>
+<span class="nc" id="L189">            case 0 -&gt; {}</span>
+<span class="fc" id="L190">            case 1 -&gt; transactionManager.addTransaction();</span>
+<span class="nc" id="L191">            case 2 -&gt; transactionManager.editTransaction();</span>
+<span class="nc" id="L192">            case 3 -&gt; transactionManager.removeTransaction();</span>
+<span class="nc" id="L193">            case 4 -&gt; transactionManager.viewTransaction();</span>
+<span class="nc" id="L194">            case 5 -&gt; notificationManager.manageNotifications();</span>
+<span class="nc" id="L195">            default -&gt; System.out.println(&quot;Неверный выбор&quot;);</span>
+        }
+<span class="fc" id="L197">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

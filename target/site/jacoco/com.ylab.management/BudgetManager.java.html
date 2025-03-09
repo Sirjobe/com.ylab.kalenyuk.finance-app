@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BudgetManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.ylab.kalenyuk.finance-app</a> &gt; <a href="index.source.html" class="el_package">com.ylab.management</a> &gt; <span class="el_source">BudgetManager.java</span></div><h1>BudgetManager.java</h1><pre class="source lang-java linenums">package com.ylab.management;
+
+import com.ylab.entity.Budget;
+import com.ylab.entity.Transaction;
+import com.ylab.entity.TransactionType;
+import com.ylab.entity.User;
+
+import java.time.LocalDate;
+import java.util.InputMismatchException;
+
+public class BudgetManager {
+    private User currentUser;
+    TransactionManager transactionManager;
+    NotificationManager notificationManager;
+    private Budget budget;
+<span class="fc" id="L16">    public BudgetManager(User currentUser, TransactionManager transactionManager) {</span>
+<span class="fc" id="L17">        this.currentUser = currentUser;</span>
+<span class="fc" id="L18">        this.transactionManager = transactionManager;</span>
+<span class="fc" id="L19">    }</span>
+    public void manageBudget() {
+<span class="nc" id="L21">        boolean budgeting = true;</span>
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if(currentUser == null) {</span>
+<span class="nc" id="L23">            System.out.println(&quot;Пользователь не авторизован&quot;);</span>
+<span class="nc" id="L24">            return;</span>
+        }
+<span class="nc" id="L26">        System.out.println(&quot;Выберите пункт меню: \n&quot; +</span>
+                &quot;1. Задать бюджет\n&quot; +
+                &quot;2. Посмотреть бюджет\n&quot; +
+                &quot;0. Назад&quot;);
+
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        while (budgeting) {</span>
+            try {
+<span class="nc" id="L33">                int choice = transactionManager.getScanner().nextInt();</span>
+<span class="nc" id="L34">                transactionManager.getScanner().nextLine();</span>
+<span class="nc bnc" id="L35" title="All 4 branches missed.">                switch (choice) {</span>
+                    case 0:
+<span class="nc" id="L37">                        budgeting = false;</span>
+                    case 1:
+<span class="nc" id="L39">                        createBudget();</span>
+<span class="nc" id="L40">                        break;</span>
+                    case 2:
+<span class="nc bnc" id="L42" title="All 2 branches missed.">                        if(currentUser.getBudgets().isEmpty()){</span>
+<span class="nc" id="L43">                            System.out.println(&quot;Бюджеты не найдены&quot;);</span>
+<span class="nc" id="L44">                            break;</span>
+                        }
+<span class="nc" id="L46">                        viewBudget();</span>
+                        break;
+                }
+<span class="nc" id="L49">            }catch (InputMismatchException e){</span>
+<span class="nc" id="L50">                transactionManager.getScanner().nextLine();</span>
+<span class="nc" id="L51">            }</span>
+        }
+
+<span class="nc" id="L54">    }</span>
+    private void createBudget() {
+<span class="nc" id="L56">        boolean flag = true;</span>
+<span class="nc" id="L57">        double limit = 0;</span>
+<span class="nc" id="L58">        LocalDate start = null;</span>
+<span class="nc" id="L59">        LocalDate end = null;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        while (flag){</span>
+<span class="nc" id="L61">        System.out.println(&quot;Введите лимит бюджета:&quot;);</span>
+<span class="nc" id="L62">        limit = transactionManager.getValidAmount();</span>
+<span class="nc" id="L63">        System.out.println(&quot;Введите начальную дату (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L64">        start = transactionManager.getValidDate();</span>
+<span class="nc" id="L65">        System.out.println(&quot;Введите конечную дату (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L66">        end = transactionManager.getValidDate();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (start.isAfter(end)) {</span>
+<span class="nc" id="L68">            System.out.println(&quot;Начальная дата не может быть позже конечной&quot;);</span>
+        }else
+<span class="nc" id="L70">            flag = false;</span>
+        }
+<span class="nc" id="L72">        Budget budget = new Budget(limit,start,end);</span>
+<span class="nc" id="L73">        currentUser.getBudgets().add(budget);</span>
+<span class="nc" id="L74">        System.out.println(&quot;Бюджет установлен!&quot;);</span>
+<span class="nc" id="L75">    }</span>
+    private void viewBudget() {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        for (Budget budget : currentUser.getBudgets()) {</span>
+<span class="nc" id="L78">            System.out.println(budget.toString());</span>
+<span class="nc" id="L79">        }</span>
+<span class="nc" id="L80">        double totalIncome = 0; // доходы</span>
+<span class="nc" id="L81">        double totalExpense = 0; // расходы</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        for (Transaction t : currentUser.getTransactions()) {</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">            if(t.getDate().isAfter(budget.getStart()) &amp;&amp; t.getDate().isBefore(budget.getEnd())</span>
+<span class="nc bnc" id="L84" title="All 4 branches missed.">                    || t.getDate().equals(budget.getStart()) || t.getDate().equals(budget.getEnd())){</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                if (t.getType() == TransactionType.INCOME){</span>
+<span class="nc" id="L86">                    totalIncome += t.getAmount();</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                }else if (t.getType() == TransactionType.EXPENSE){</span>
+<span class="nc" id="L88">                    totalExpense += t.getAmount();</span>
+                }
+            }
+<span class="nc" id="L91">        }</span>
+<span class="nc" id="L92">        double remaining = budget.getLimit() - totalIncome;</span>
+<span class="nc" id="L93">        System.out.println(&quot;Лимит: &quot;+budget.getLimit()+&quot;\n&quot; +</span>
+                &quot;Доходы: &quot;+totalIncome+ &quot;\n&quot; +
+                &quot;Расходы: &quot;+totalExpense+ &quot;\n&quot; +
+                &quot;Остаток: &quot;+remaining );
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (remaining &lt; 0) {</span>
+<span class="nc" id="L98">            String message = &quot;Бюджет &quot; + budget.getLimit() + &quot; превышен. Остаток: &quot; + String.format(&quot;%.2f&quot;, remaining);</span>
+<span class="nc" id="L99">            notificationManager.logNotification(message);</span>
+        }
+<span class="nc" id="L101">        System.out.println(&quot;-----------------&quot;);</span>
+<span class="nc" id="L102">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

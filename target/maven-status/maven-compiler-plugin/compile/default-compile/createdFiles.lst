@@ -1,0 +1,13 @@
+com\ylab\management\StatisticsManager.class
+com\ylab\management\TransactionManager.class
+com\ylab\entity\Goal.class
+com\ylab\management\BudgetManager.class
+com\ylab\management\UserManager.class
+com\ylab\entity\Budget.class
+com\ylab\management\GoalManager.class
+com\ylab\entity\User.class
+com\ylab\entity\Transaction.class
+com\ylab\management\AdminManager.class
+com\ylab\entity\TransactionType.class
+com\ylab\management\NotificationManager.class
+com\ylab\App.class

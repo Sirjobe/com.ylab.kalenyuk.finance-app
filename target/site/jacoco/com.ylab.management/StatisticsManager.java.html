@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatisticsManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.ylab.kalenyuk.finance-app</a> &gt; <a href="index.source.html" class="el_package">com.ylab.management</a> &gt; <span class="el_source">StatisticsManager.java</span></div><h1>StatisticsManager.java</h1><pre class="source lang-java linenums">package com.ylab.management;
+
+import com.ylab.entity.Transaction;
+import com.ylab.entity.TransactionType;
+import com.ylab.entity.User;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
+
+
+public class StatisticsManager {
+    private User currentUser;
+    private TransactionManager transactionManager;
+<span class="fc" id="L16">    public StatisticsManager(User currentUser, TransactionManager transactionManager) {</span>
+<span class="fc" id="L17">        this.currentUser = currentUser;</span>
+<span class="fc" id="L18">        this.transactionManager = transactionManager;</span>
+<span class="fc" id="L19">    }</span>
+    public void showStatistics() {
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (transactionManager != null) {</span>
+<span class="nc" id="L22">            System.out.println(&quot;Пользователь не авторизирован&quot;);</span>
+<span class="nc" id="L23">            return;</span>
+        }
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (currentUser.getTransactions().isEmpty()) {</span>
+<span class="nc" id="L26">            System.out.println(&quot;Транзакций нет&quot;);</span>
+<span class="nc" id="L27">            return;</span>
+        }
+<span class="nc" id="L29">        System.out.println(&quot;Статистика за: \n&quot; +</span>
+                &quot;1. Весь период\n&quot; +
+                &quot;2. Произвольный период\n&quot; +
+                &quot;3. По категориям&quot; +
+                &quot;0. Назад&quot;);
+<span class="nc" id="L34">        boolean flag = true;</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        while (flag) {</span>
+            try {
+<span class="nc" id="L37">                int choice = transactionManager.getScanner().nextInt();</span>
+<span class="nc" id="L38">                transactionManager.getScanner().nextLine();</span>
+<span class="nc bnc" id="L39" title="All 5 branches missed.">                switch (choice) {</span>
+                    case 0:
+<span class="nc" id="L41">                        flag = false;</span>
+                    case 1:
+<span class="nc" id="L43">                        wholePeriod();</span>
+<span class="nc" id="L44">                        break;</span>
+                    case 2:
+<span class="nc" id="L46">                        currentPeriod();</span>
+<span class="nc" id="L47">                        break;</span>
+                    case 3:
+<span class="nc" id="L49">                        categoryStatistics();</span>
+
+                        break;
+                }
+<span class="nc" id="L53">            }catch (InputMismatchException e){</span>
+<span class="nc" id="L54">                System.out.println(&quot;Введите число: &quot;);</span>
+<span class="nc" id="L55">                transactionManager.getScanner().nextLine();</span>
+<span class="nc" id="L56">            }</span>
+        }
+<span class="nc" id="L58">    }</span>
+    private void wholePeriod(){
+<span class="nc" id="L60">        double totalIncome = 0;</span>
+<span class="nc" id="L61">        double totalExpense = 0;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        for (Transaction t : currentUser.getTransactions()) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (t.getType()== TransactionType.INCOME) {</span>
+<span class="nc" id="L64">                totalIncome += t.getAmount();</span>
+            }
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            if (t.getType()== TransactionType.EXPENSE) {</span>
+<span class="nc" id="L67">                totalExpense += t.getAmount();</span>
+            }
+<span class="nc" id="L69">        }</span>
+<span class="nc" id="L70">        double netResult = totalIncome - totalExpense;</span>
+<span class="nc" id="L71">        System.out.println(&quot;Статистика за весь период: \n&quot; +</span>
+                &quot;Доходы: &quot; + totalIncome + &quot;\n&quot; +
+                &quot;Расходы: &quot; + totalExpense + &quot;\n&quot; +
+                &quot;Чистый результат: &quot; + netResult);
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if(netResult&lt;0){</span>
+<span class="nc" id="L76">            System.out.println(&quot;Дефицит&quot;+Math.abs(netResult));</span>
+        }
+<span class="nc" id="L78">    }</span>
+    private void currentPeriod() {
+<span class="nc" id="L80">        boolean flag = true;</span>
+<span class="nc" id="L81">        LocalDate start = null;</span>
+<span class="nc" id="L82">        LocalDate end = null;</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        while (flag) {</span>
+<span class="nc" id="L84">            System.out.println(&quot;Начало (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L85">            start=transactionManager.getValidDate();</span>
+<span class="nc" id="L86">            System.out.println(&quot;Конец (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L87">            end=transactionManager.getValidDate();</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            if (!start.isAfter(end)) {</span>
+<span class="nc" id="L89">                flag = false;</span>
+            }else
+<span class="nc" id="L91">                System.out.println(&quot;Начало позже конца&quot;);</span>
+        }
+<span class="nc" id="L93">        double totalIncome = 0;</span>
+<span class="nc" id="L94">        double totalExpense = 0;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (Transaction t : currentUser.getTransactions()) {</span>
+<span class="nc bnc" id="L96" title="All 4 branches missed.">            if(!t.getDate().isBefore(start) &amp;&amp; !t.getDate().isAfter(end)){</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (t.getType() == TransactionType.INCOME){</span>
+<span class="nc" id="L98">                    totalIncome += t.getAmount();</span>
+                }
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                if (t.getType() == TransactionType.EXPENSE) {</span>
+<span class="nc" id="L101">                    totalExpense += t.getAmount();</span>
+                }
+            }
+<span class="nc" id="L104">        }</span>
+<span class="nc" id="L105">        double netResult = totalIncome - totalExpense;</span>
+<span class="nc" id="L106">        System.out.println(&quot;Статистика за период &quot;+start+&quot; - &quot;+end+&quot;: \n&quot; +</span>
+                &quot;Доходы: &quot; + totalIncome + &quot;\n&quot; +
+                &quot;Расходы: &quot; + totalExpense + &quot;\n&quot; +
+                &quot;Чистый результат: &quot; + netResult);
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if(netResult&lt;0){</span>
+<span class="nc" id="L111">            System.out.println(&quot;Дефицит&quot;+Math.abs(netResult));</span>
+        }
+
+
+<span class="nc" id="L115">    }</span>
+    private void categoryStatistics() {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (currentUser.getTransactions().isEmpty()){</span>
+<span class="nc" id="L118">            System.out.println(&quot;Транзакций нет&quot;);</span>
+<span class="nc" id="L119">            return;</span>
+        }
+<span class="nc" id="L121">        boolean flagDate = true;</span>
+<span class="nc" id="L122">        LocalDate start = null;</span>
+<span class="nc" id="L123">        LocalDate end = null;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        while (flagDate) {</span>
+<span class="nc" id="L125">            System.out.println(&quot;Начало (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L126">            start=transactionManager.getValidDate();</span>
+<span class="nc" id="L127">            System.out.println(&quot;Конец (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L128">            end=transactionManager.getValidDate();</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if (!start.isAfter(end)) {</span>
+<span class="nc" id="L130">                flagDate = false;</span>
+            }else
+<span class="nc" id="L132">                System.out.println(&quot;Начало позже конца&quot;);</span>
+        }
+<span class="nc" id="L134">        Map&lt;String,Double&gt; categoryStatistics = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L135">        double totalExpenses = 0;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        for (Transaction t : currentUser.getTransactions()) {</span>
+<span class="nc bnc" id="L137" title="All 4 branches missed.">            if (!t.getDate().isBefore(start) &amp;&amp; !t.getDate().isAfter(end)) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                if(t.getType() == TransactionType.EXPENSE){</span>
+<span class="nc" id="L139">                    String category = t.getCategory();</span>
+<span class="nc" id="L140">                    double currentAmount = categoryStatistics.getOrDefault(category, 0.0);</span>
+<span class="nc" id="L141">                    categoryStatistics.put(category, currentAmount + t.getAmount());</span>
+<span class="nc" id="L142">                    totalExpenses += t.getAmount();</span>
+                }
+            }
+<span class="nc" id="L145">            System.out.println(&quot;Анализ расходов по категориям за &quot;+start+&quot; - &quot;+end+&quot;:&quot;);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if(categoryStatistics.isEmpty()){</span>
+<span class="nc" id="L147">                System.out.println(&quot;Расходов за период нет&quot;);</span>
+            }else {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                for (Map.Entry&lt;String, Double&gt; entry : categoryStatistics.entrySet()) {</span>
+<span class="nc" id="L150">                    String key = entry.getKey();</span>
+<span class="nc" id="L151">                    Double value = entry.getValue();</span>
+<span class="nc" id="L152">                    System.out.println(&quot;Категория: &quot; + key + &quot; | Расходы: &quot; + value);</span>
+<span class="nc" id="L153">                    totalExpenses += value;</span>
+<span class="nc" id="L154">                }</span>
+            }
+<span class="nc" id="L156">            System.out.println(&quot;Общий расход: &quot; + totalExpenses);</span>
+<span class="nc" id="L157">        }</span>
+
+<span class="nc" id="L159">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

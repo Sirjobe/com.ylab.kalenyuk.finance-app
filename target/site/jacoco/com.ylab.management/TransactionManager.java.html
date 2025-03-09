@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.ylab.kalenyuk.finance-app</a> &gt; <a href="index.source.html" class="el_package">com.ylab.management</a> &gt; <span class="el_source">TransactionManager.java</span></div><h1>TransactionManager.java</h1><pre class="source lang-java linenums">package com.ylab.management;
+
+import com.ylab.entity.Transaction;
+import com.ylab.entity.TransactionType;
+import com.ylab.entity.User;
+
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+
+public class TransactionManager {
+    private User currentUser;
+<span class="fc" id="L16">    private Scanner scanner = new Scanner(System.in);</span>
+<span class="fc" id="L17">    public TransactionManager(User currentUser) {</span>
+<span class="fc" id="L18">        this.currentUser = currentUser;</span>
+<span class="fc" id="L19">    }</span>
+    public Scanner getScanner() {
+<span class="nc" id="L21">        return scanner;</span>
+    }
+    public void addTransaction() {
+<span class="nc" id="L24">        double amount = getValidAmount();</span>
+<span class="nc" id="L25">        String description = getValidDescription();</span>
+<span class="nc" id="L26">        String category = getValidCategory();</span>
+<span class="nc" id="L27">        LocalDate date = getValidDate();</span>
+<span class="nc" id="L28">        TransactionType type = getValidType();</span>
+<span class="nc" id="L29">        Transaction transaction = new Transaction(amount, description, category, date, type);</span>
+<span class="nc" id="L30">        currentUser.addTransaction(transaction);</span>
+<span class="nc" id="L31">        System.out.println(&quot;Транзакция добавлена&quot;);</span>
+<span class="nc" id="L32">    }</span>
+    public void editTransaction() {
+<span class="nc" id="L34">        checkTransaction();</span>
+<span class="nc" id="L35">        editMenu();</span>
+<span class="nc" id="L36">        System.out.println(&quot;Транзакция обновлена!&quot;);</span>
+<span class="nc" id="L37">    }</span>
+    public void removeTransaction() {
+<span class="nc" id="L39">        System.out.println(&quot;Введите ID транзакции для удаления:&quot;);</span>
+<span class="nc" id="L40">        int id = scanner.nextInt();</span>
+<span class="nc" id="L41">        scanner.nextLine();</span>
+<span class="nc" id="L42">        Transaction toRemove = null;</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        for (Transaction t : currentUser.getTransactions()) {</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (t.getId() == id) {</span>
+<span class="nc" id="L45">                toRemove = t;</span>
+<span class="nc" id="L46">                break;</span>
+            }
+<span class="nc" id="L48">        }</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (toRemove != null) {</span>
+<span class="nc" id="L50">            currentUser.getTransactions().remove(toRemove);</span>
+<span class="nc" id="L51">            System.out.println(&quot;Транзакция удалена.&quot;);</span>
+        } else {
+<span class="nc" id="L53">            System.out.println(&quot;Транзакция не найдена.&quot;);</span>
+        }
+<span class="nc" id="L55">    }</span>
+    public void viewTransaction() {
+<span class="nc" id="L57">        checkTransaction();</span>
+<span class="nc" id="L58">        List&lt;Transaction&gt; filteredTransactions = new ArrayList&lt;&gt;(currentUser.getTransactions());</span>
+<span class="nc" id="L59">        System.out.println(&quot;Выведи: \n&quot; +</span>
+                &quot;1. Все транзакции \n&quot; +
+                &quot;2. По дате \n&quot; +
+                &quot;3. По категории \n&quot; +
+                &quot;4. По типу\n&quot; +
+                &quot;0.Назад&quot;);
+<span class="nc" id="L65">        boolean viewing = true;</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        while (viewing) {</span>
+<span class="nc" id="L67">            int indexMenu = scanner.nextInt();</span>
+<span class="nc" id="L68">            scanner.nextLine();</span>
+<span class="nc bnc" id="L69" title="All 6 branches missed.">            switch (indexMenu) {</span>
+                case 0:
+<span class="nc" id="L71">                    viewing = false;</span>
+                case 1:
+<span class="nc" id="L73">                    filteredTransactions = new ArrayList&lt;&gt;(currentUser.getTransactions());</span>
+<span class="nc" id="L74">                    viewFilter(filteredTransactions);</span>
+<span class="nc" id="L75">                    break;</span>
+                case 2:
+<span class="nc" id="L77">                    filterDate(filteredTransactions);</span>
+<span class="nc" id="L78">                    viewFilter(filteredTransactions);</span>
+<span class="nc" id="L79">                    break;</span>
+                case 3:
+<span class="nc" id="L81">                    filterCategory(filteredTransactions);</span>
+<span class="nc" id="L82">                    viewFilter(filteredTransactions);</span>
+<span class="nc" id="L83">                    break;</span>
+                case 4:
+<span class="nc" id="L85">                    filterType(filteredTransactions);</span>
+<span class="nc" id="L86">                    viewFilter(filteredTransactions);</span>
+<span class="nc" id="L87">                    break;</span>
+                default:
+<span class="nc" id="L89">                    System.out.println(&quot;Неверный выбор&quot;);</span>
+            }
+<span class="nc" id="L91">        }</span>
+
+<span class="nc" id="L93">    }</span>
+    public double getValidAmount() {
+<span class="nc" id="L95">        boolean flagAmount = true;</span>
+<span class="nc" id="L96">        double amount = 0;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        while (flagAmount) {</span>
+            try {
+<span class="nc" id="L99">                System.out.println(&quot;Введите сумму: &quot;);</span>
+<span class="nc" id="L100">                amount = scanner.nextDouble();</span>
+<span class="nc" id="L101">                scanner.nextLine(); // очистка буфера</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                if (amount &gt; 0) {</span>
+<span class="nc" id="L103">                    flagAmount = false;</span>
+                } else
+<span class="nc" id="L105">                    System.out.println(&quot;Сумма должна быть положительной&quot;);</span>
+<span class="nc" id="L106">            } catch (InputMismatchException e) {</span>
+<span class="nc" id="L107">                System.out.println(&quot;Введи число&quot;);</span>
+<span class="nc" id="L108">            }</span>
+        }
+<span class="nc" id="L110">        return amount;</span>
+    }
+    private String getValidDescription() {
+<span class="nc" id="L113">        boolean flagDescription = true;</span>
+<span class="nc" id="L114">        String description = &quot;&quot;;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        while (flagDescription) {</span>
+<span class="nc" id="L116">            System.out.println(&quot;Введите описание:&quot;);</span>
+<span class="nc" id="L117">            description = scanner.nextLine();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (!description.isEmpty()) {</span>
+<span class="nc" id="L119">                flagDescription = false;</span>
+            }else
+<span class="nc" id="L121">                System.out.println(&quot;Описание не может быть пустым&quot;);</span>
+        }
+<span class="nc" id="L123">        return description;</span>
+    }
+    private String getValidCategory() {
+<span class="nc" id="L126">        boolean flagCategory = true;</span>
+<span class="nc" id="L127">        String category = &quot;&quot;;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        while (flagCategory) {</span>
+<span class="nc" id="L129">            System.out.println(&quot;Введите категорию: &quot;);</span>
+<span class="nc" id="L130">            category = scanner.nextLine();</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (!category.isEmpty()) {</span>
+<span class="nc" id="L132">                flagCategory = false;</span>
+            }else
+<span class="nc" id="L134">                System.out.println(&quot;Категория не может быть пустой&quot;);</span>
+        }
+<span class="nc" id="L136">        return category;</span>
+    }
+    public LocalDate getValidDate() {
+<span class="nc" id="L139">        boolean flagDate = true;</span>
+<span class="nc" id="L140">        String date = &quot;&quot;;</span>
+<span class="nc" id="L141">        LocalDate transactionDate = null;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        while (flagDate) {</span>
+<span class="nc" id="L143">            System.out.println(&quot;Введите дату в формате (yyyy-MM-dd): &quot;);</span>
+<span class="nc" id="L144">            date = scanner.nextLine();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            if (!date.isEmpty()) {</span>
+                try {
+<span class="nc" id="L147">                    transactionDate = LocalDate.parse(date);</span>
+<span class="nc" id="L148">                    flagDate = false;</span>
+<span class="nc" id="L149">                } catch (DateTimeException e) {</span>
+<span class="nc" id="L150">                    System.out.println(&quot;Неверный формат даты (используйте yyyy-MM-dd)&quot;);</span>
+<span class="nc" id="L151">                }</span>
+            } else
+<span class="nc" id="L153">                System.out.println(&quot;Дата не может быть пустой&quot;);</span>
+        }
+<span class="nc" id="L155">        return transactionDate;</span>
+    }
+    private TransactionType getValidType() {
+<span class="nc" id="L158">        boolean flagType = true;</span>
+<span class="nc" id="L159">        int type = 0;</span>
+<span class="nc" id="L160">        TransactionType transactionType = null;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        while (flagType) {</span>
+            try {
+<span class="nc" id="L163">                System.out.println(&quot;Тип: \&quot;1.Доход, 2 Расход:\&quot;&quot;);</span>
+<span class="nc" id="L164">                type = scanner.nextInt();</span>
+<span class="nc" id="L165">                scanner.nextLine(); // очистка буфера</span>
+<span class="nc" id="L166">            } catch (InputMismatchException e) {</span>
+<span class="nc" id="L167">                System.out.println(&quot;Введи число&quot;);</span>
+<span class="nc" id="L168">            }</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            if (type == 1) {</span>
+<span class="nc" id="L170">                transactionType = TransactionType.INCOME;</span>
+<span class="nc" id="L171">                flagType = false;</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            } else if (type == 2) {</span>
+<span class="nc" id="L173">                transactionType = TransactionType.EXPENSE;</span>
+<span class="nc" id="L174">                flagType = false;</span>
+            } else
+<span class="nc" id="L176">                System.out.println(&quot;Неверный тип&quot;);</span>
+        }
+<span class="nc" id="L178">        return transactionType;</span>
+    }
+    private int getValidIndex() {
+<span class="nc" id="L181">        boolean flagIndex = true;</span>
+<span class="nc" id="L182">        int index = 0;</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        while (flagIndex) {</span>
+            try {
+<span class="nc" id="L185">                System.out.println(&quot;Введите номер транзакции для редактирования&quot;);</span>
+<span class="nc" id="L186">                int validIndex = scanner.nextInt();</span>
+<span class="nc" id="L187">                scanner.nextLine();</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">                if (validIndex &gt;= 0 || validIndex&lt;currentUser.getTransactions().size()) {</span>
+<span class="nc" id="L189">                    flagIndex = false;</span>
+                }else
+<span class="nc" id="L191">                    System.out.println(&quot;Неверный номер транзакции&quot;);</span>
+<span class="nc" id="L192">            }catch (InputMismatchException e){</span>
+<span class="nc" id="L193">                System.out.println(&quot;Введите число&quot;);</span>
+<span class="nc" id="L194">            }</span>
+        }
+<span class="nc" id="L196">        return index;</span>
+    }
+    private void editMenu() {
+<span class="nc" id="L199">        System.out.println(&quot;Какие данные вы хотите отредактировать: \n&quot; +</span>
+                &quot;1. Редактировать сумму \n&quot; +
+                &quot;2. Редактировать описание\n&quot; +
+                &quot;3. Редактировать категорию\n&quot; +
+                &quot;4. Редактировать дату\n&quot; +
+                &quot;5. Редактировать тип\n&quot; +
+                &quot;6.Назад&quot;);
+<span class="nc" id="L206">        boolean flagEdit = true;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        while (flagEdit){</span>
+            String save;
+<span class="nc" id="L209">            int validIndex = getValidIndex();</span>
+<span class="nc" id="L210">            Transaction transaction = currentUser.getTransactions().get(validIndex);</span>
+<span class="nc" id="L211">            System.out.println(transaction.toString());</span>
+<span class="nc bnc" id="L212" title="All 7 branches missed.">            switch (validIndex) {</span>
+                case 1:
+<span class="nc" id="L214">                    double previousAmount = transaction.getAmount();</span>
+<span class="nc" id="L215">                    transaction.setAmount(getValidAmount());</span>
+<span class="nc" id="L216">                    System.out.println(&quot;Сохранить изменения? (y/n): &quot;);</span>
+<span class="nc" id="L217">                    save = scanner.nextLine();</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">                    if (save.equalsIgnoreCase(&quot;y&quot;)) {</span>
+<span class="nc" id="L219">                        break;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                    }else if (save.equalsIgnoreCase(&quot;n&quot;)) {</span>
+<span class="nc" id="L221">                        transaction.setAmount(previousAmount);</span>
+                    }
+                    break;
+                case 2:
+<span class="nc" id="L225">                    String prevDescription = transaction.getDescription();</span>
+<span class="nc" id="L226">                    transaction.setDescription(getValidDescription());</span>
+<span class="nc" id="L227">                    System.out.println(&quot;Сохранить изменения? (y/n): &quot;);</span>
+<span class="nc" id="L228">                    save = scanner.nextLine();</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">                    if (save.equalsIgnoreCase(&quot;y&quot;)) {</span>
+<span class="nc" id="L230">                        break;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">                    }else if (save.equalsIgnoreCase(&quot;n&quot;)) {</span>
+<span class="nc" id="L232">                        transaction.setDescription(prevDescription);</span>
+                    }
+                    break;
+                case 3:
+<span class="nc" id="L236">                    String prevCategory = transaction.getCategory();</span>
+<span class="nc" id="L237">                    transaction.setCategory(getValidCategory());</span>
+<span class="nc" id="L238">                    System.out.println(&quot;Сохранить изменения? (y/n): &quot;);</span>
+<span class="nc" id="L239">                    save = scanner.nextLine();</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">                    if (save.equalsIgnoreCase(&quot;y&quot;)) {</span>
+<span class="nc" id="L241">                        break;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">                    }else if (save.equalsIgnoreCase(&quot;n&quot;)) {</span>
+<span class="nc" id="L243">                        transaction.setCategory(prevCategory);</span>
+                    }
+                    break;
+                case 4:
+<span class="nc" id="L247">                    LocalDate prevDate = transaction.getDate();</span>
+<span class="nc" id="L248">                    transaction.setDate(getValidDate());</span>
+<span class="nc" id="L249">                    System.out.println(&quot;Сохранить изменения? (y/n): &quot;);</span>
+<span class="nc" id="L250">                    save = scanner.nextLine();</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                    if (save.equalsIgnoreCase(&quot;y&quot;)) {</span>
+<span class="nc" id="L252">                        break;</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                    }else if (save.equalsIgnoreCase(&quot;n&quot;)) {</span>
+<span class="nc" id="L254">                        transaction.setDate(prevDate);</span>
+                    }
+                    break;
+                case 5:
+<span class="nc" id="L258">                    TransactionType prevType = transaction.getType();</span>
+<span class="nc" id="L259">                    transaction.setType(getValidType());</span>
+<span class="nc" id="L260">                    System.out.println(&quot;Сохранить изменения? (y/n): &quot;);</span>
+<span class="nc" id="L261">                    save = scanner.nextLine();</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                    if (save.equalsIgnoreCase(&quot;y&quot;)) {</span>
+<span class="nc" id="L263">                        break;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                    }else if (save.equalsIgnoreCase(&quot;n&quot;)) {</span>
+<span class="nc" id="L265">                        transaction.setType(prevType);</span>
+                    }
+                    break;
+                case 6:
+<span class="nc" id="L269">                    flagEdit = false;</span>
+            }
+<span class="nc" id="L271">        }</span>
+<span class="nc" id="L272">    }</span>
+    private void checkTransaction() {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if(currentUser == null) {</span>
+<span class="nc" id="L275">            System.out.println(&quot;Пользователь не авторизован&quot;);</span>
+<span class="nc" id="L276">            return;</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        }else if (currentUser.getTransactions().isEmpty()){</span>
+<span class="nc" id="L278">            System.out.println(&quot;Транзакций нет&quot;);</span>
+<span class="nc" id="L279">            return;</span>
+        }
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        for (Transaction transaction : currentUser.getTransactions()) {</span>
+<span class="nc" id="L282">            System.out.println(transaction.toString());</span>
+<span class="nc" id="L283">        }</span>
+<span class="nc" id="L284">    }</span>
+    private void filterDate(List&lt;Transaction&gt; filteredTransactions) {
+<span class="nc" id="L286">        boolean flag = true;</span>
+<span class="nc" id="L287">        LocalDate startDate = null;</span>
+<span class="nc" id="L288">        LocalDate endDate = null;</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        while (flag) {</span>
+<span class="nc" id="L290">            System.out.println(&quot;Введите начальную дату (yyyy-MM-dd):&quot;);</span>
+<span class="nc" id="L291">            startDate= getValidDate();</span>
+<span class="nc" id="L292">            endDate = getValidDate();</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">            if (startDate.isAfter(endDate)) {</span>
+<span class="nc" id="L294">                System.out.println(&quot;Начальная дата не может быть позже конечной&quot;);</span>
+            }else
+<span class="nc" id="L296">                flag = false;</span>
+        }
+<span class="nc" id="L298">        List&lt;Transaction&gt; temp = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        for (Transaction t : filteredTransactions){</span>
+<span class="nc bnc" id="L300" title="All 8 branches missed.">            if(t.getDate().isAfter(startDate)&amp;&amp;t.getDate().isBefore(endDate)|| t.getDate().equals(startDate) || t.getDate().equals(endDate)){</span>
+<span class="nc" id="L301">               temp.add(t);</span>
+            }
+<span class="nc" id="L303">        }</span>
+<span class="nc" id="L304">        filteredTransactions = temp;</span>
+<span class="nc" id="L305">    }</span>
+    private void filterCategory(List&lt;Transaction&gt; filteredTransactions) {
+<span class="nc" id="L307">        String category = getValidCategory();</span>
+<span class="nc" id="L308">        List&lt;Transaction&gt; temp = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        for (Transaction t : filteredTransactions){</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">            if(t.getCategory().equalsIgnoreCase(category)){</span>
+<span class="nc" id="L311">                temp.add(t);</span>
+            }
+<span class="nc" id="L313">        }</span>
+<span class="nc" id="L314">        filteredTransactions = temp;</span>
+<span class="nc" id="L315">    }</span>
+    private void filterType(List&lt;Transaction&gt; filteredTransactions) {
+<span class="nc" id="L317">        TransactionType type = getValidType();</span>
+<span class="nc" id="L318">        List&lt;Transaction&gt; temp = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        for (Transaction t : filteredTransactions){</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">            if(t.getType().equals(type)){</span>
+<span class="nc" id="L321">                temp.add(t);</span>
+            }
+<span class="nc" id="L323">        }</span>
+<span class="nc" id="L324">        filteredTransactions = temp;</span>
+<span class="nc" id="L325">    }</span>
+    private void viewFilter(List&lt;Transaction&gt; filteredTransactions) {
+<span class="nc bnc" id="L327" title="All 2 branches missed.">        if (filteredTransactions.isEmpty()) {</span>
+<span class="nc" id="L328">            System.out.println(&quot;Транзакций по заданным критериям нет&quot;);</span>
+        }
+<span class="nc" id="L330">        System.out.println(&quot;Найдено: &quot; + filteredTransactions.size());</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        for (Transaction t : filteredTransactions) {</span>
+<span class="nc" id="L332">            System.out.println(t.toString());</span>
+<span class="nc" id="L333">        }</span>
+<span class="nc" id="L334">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
