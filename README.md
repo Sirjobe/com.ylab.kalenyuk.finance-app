@@ -1,1 +1,1 @@
-# com.ylab.kalenyuk.finance-app
+1. Вводная лекция. ДЗ
