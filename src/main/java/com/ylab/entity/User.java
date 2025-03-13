@@ -1,79 +1,82 @@
 package com.ylab.entity;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Класс, представляющий пользователя приложения.
+ */
 
 public class User {
-  private final String email;
-  private String password;
-  private String username;
-  private List<Transaction> transactions = new ArrayList<>();
-  private List<Goal> goals;
-  private List<Budget> budgets = new ArrayList<>();
-  private boolean isBlocked = false;
-  private boolean isAdmin = false; // По умолчанию не администратор
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+     private final String email;
+    private String password;
+    private String username;
+    private boolean blocked;
+    private boolean isAdmin;
 
-    public boolean isAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
-    }
-    public void setBudgets(List<Budget> budgets) {
-        this.budgets = budgets;
-    }
-
-    public List<Budget> getBudgets() {
-        return budgets;
-    }
-
-    public User(String email, String username, String password) {
+    /**
+     * Создает нового пользователя.
+     *
+     * @param email адрес электронной почты пользователя
+     * @param username имя пользователя
+     * @param password пароль пользователя
+     */
+     public User(String email, String username, String password, boolean isAdmin) {
+      if (!isValidEmail(email)) {
+          throw new IllegalArgumentException("Некорректный формат email");
+      }
       this.email = email;
       this.username = username;
       this.password = password;
+      this.isAdmin = isAdmin;
+      this.blocked = false;
 
-  }
-    public boolean isBlocked() {
-        return isBlocked;
     }
 
-    public void setBlocked(boolean blocked) {
-        this.isBlocked = blocked;
+     public boolean isAdmin() {
+        return isAdmin;
+ }
+
+     public boolean isBlocked() {
+        return blocked;
     }
 
-    public List<Goal> getGoals() {
-        return goals;
-    }
+     public void setBlocked(boolean blocked) { this.blocked = blocked; }
 
-    public String getUsername() {
+     public String getUsername() {
         return username;
   }
-  public String getEmail() {
+
+     public String getEmail() {
       return email;
   }
 
-  public String getPassword() {
+     public String getPassword() {
       return password;
   }
-  public void setUsername(String username) {
+
+     public void setUsername(String username) {
       this.username = username;
   }
-  public void setPassword(String password) {
+
+    public void setPassword(String password) {
       this.password = password;
   }
-  public List<Transaction> getTransactions() {
-      return transactions;
+
+     public boolean isPasswordValid() {
+        return password != null && password.length() >= 6;
   }
-  public void addTransaction(Transaction transaction) {
-      if (transactions == null) {
-          transactions = new ArrayList<Transaction>();
+
+    private boolean isValidEmail(String email) {
+      if (email == null || email.isEmpty()) {
+          return false;
       }
-      transactions.add(transaction);
+      return EMAIL_PATTERN.matcher(email).matches();
   }
 
-
-
+    public void setAdmin(boolean b) {
+      this.isAdmin = b;
+    }
 }
 

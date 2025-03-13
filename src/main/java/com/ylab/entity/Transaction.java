@@ -2,26 +2,47 @@ package com.ylab.entity;
 
 import java.time.LocalDate;
 
+/**
+ * Класс, представляющий финансовую транзакцию.
+ */
 public class Transaction {
     private double amount;
     private String description;
     private String category;
     private LocalDate date;
     private TransactionType type;
-    private static int nextId = 1;
-    private int id;
+    private static int id = 1;
+    private String email;
 
-    public Transaction(double amount, String description, String category, LocalDate date, TransactionType type) {
-        this.id = nextId++;
+    /**
+     * Создает новую транзакцию.
+     *
+     * @param amount сумма транзакции
+     * @param description описание транзакции
+     * @param category категория транзакции
+     * @param date дата транзакции
+     * @param type тип транзакции (доход или расход)
+     * @param email почта пользователя
+     */
+    public Transaction(double amount, String description, String category, LocalDate date, TransactionType type, String email) {
+        this.id = id++;
         this.amount = amount;
         this.description = description;
         this.category = category;
         this.date = date;
         this.type = type;
+        this.email = email;
     }
+
+    /**
+     * Возвращает идентификатор транзакции.
+     *
+     * @return идентификатор транзакции
+     */
     public int getId() {
         return id;
     }
+
     public double getAmount() {
         return amount;
     }
@@ -61,6 +82,8 @@ public class Transaction {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public String getUserEmail() {return email;}
 
     @Override
     public String toString() {

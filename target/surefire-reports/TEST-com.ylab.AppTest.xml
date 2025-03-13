@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.ylab.AppTest" time="2.454" tests="8" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.ylab.AppTest" time="0.151" tests="2" errors="1" skipped="0" failures="1">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="RU"/>
     <property name="sun.boot.library.path" value="C:\Users\user\.jdks\corretto-17.0.14\bin"/>
-    <property name="sun.java.command" value="C:\Users\user\AppData\Local\Temp\surefire3513982459455043928\surefirebooter-20250309173317531_3.jar C:\Users\user\AppData\Local\Temp\surefire3513982459455043928 2025-03-09T17-33-17_342-jvmRun1 surefire-20250309173317531_1tmp surefire_0-20250309173317531_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\user\AppData\Local\Temp\surefire7138606409187406653\surefirebooter-20250314000004266_3.jar C:\Users\user\AppData\Local\Temp\surefire7138606409187406653 2025-03-14T00-00-04_037-jvmRun1 surefire-20250314000004266_1tmp surefire_0-20250314000004266_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\target\test-classes;C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\target\classes;C:\Users\user\.m2\repository\org\junit\jupiter\junit-jupiter\5.12.0\junit-jupiter-5.12.0.jar;C:\Users\user\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.12.0\junit-jupiter-api-5.12.0.jar;C:\Users\user\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\user\.m2\repository\org\junit\platform\junit-platform-commons\1.12.0\junit-platform-commons-1.12.0.jar;C:\Users\user\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\user\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.12.0\junit-jupiter-params-5.12.0.jar;C:\Users\user\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.12.0\junit-jupiter-engine-5.12.0.jar;C:\Users\user\.m2\repository\org\junit\platform\junit-platform-engine\1.12.0\junit-platform-engine-1.12.0.jar;C:\Users\user\.m2\repository\org\mockito\mockito-core\5.14.2\mockito-core-5.14.2.jar;C:\Users\user\.m2\repository\net\bytebuddy\byte-buddy\1.15.4\byte-buddy-1.15.4.jar;C:\Users\user\.m2\repository\net\bytebuddy\byte-buddy-agent\1.15.4\byte-buddy-agent-1.15.4.jar;C:\Users\user\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\user\.m2\repository\org\mockito\mockito-junit-jupiter\5.14.2\mockito-junit-jupiter-5.14.2.jar;C:\Users\user\.m2\repository\com\sun\mail\javax.mail\1.6.2\javax.mail-1.6.2.jar;C:\Users\user\.m2\repository\javax\activation\activation\1.1\activation-1.1.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\user\AppData\Local\Temp\surefire3513982459455043928\surefirebooter-20250309173317531_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\user\AppData\Local\Temp\surefire7138606409187406653\surefirebooter-20250314000004266_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.14+7-LTS"/>
@@ -59,12 +59,32 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testHandleAdminMenuWithoutAuthorization" classname="com.ylab.AppTest" time="2.209"/>
-  <testcase name="testHandleUserMenuWithoutAuthorization" classname="com.ylab.AppTest" time="0.008"/>
-  <testcase name="testMainExit" classname="com.ylab.AppTest" time="0.008"/>
-  <testcase name="testShowUserMenuProfile" classname="com.ylab.AppTest" time="0.032"/>
-  <testcase name="testHandleProfileMenuEditName" classname="com.ylab.AppTest" time="0.035"/>
-  <testcase name="testHandleTopMenuRegistration" classname="com.ylab.AppTest" time="0.005"/>
-  <testcase name="testHandleTopMenuAuthentication" classname="com.ylab.AppTest" time="0.005"/>
-  <testcase name="testHandleTransactionsMenuAdd" classname="com.ylab.AppTest" time="0.088"/>
+  <testcase name="testLogin" classname="com.ylab.AppTest" time="0.081">
+    <failure message="expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+	at com.ylab.AppTest.testLogin(AppTest.java:49)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+]]></failure>
+  </testcase>
+  <testcase name="testRegister" classname="com.ylab.AppTest" time="0.006">
+    <error type="java.util.NoSuchElementException"><![CDATA[java.util.NoSuchElementException
+	at java.base/java.util.Scanner.throwFor(Scanner.java:937)
+	at java.base/java.util.Scanner.next(Scanner.java:1594)
+	at java.base/java.util.Scanner.nextInt(Scanner.java:2258)
+	at java.base/java.util.Scanner.nextInt(Scanner.java:2212)
+	at com.ylab.App.showGuestMenu(App.java:53)
+	at com.ylab.App.main(App.java:40)
+	at com.ylab.AppTest.testRegister(AppTest.java:35)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+]]></error>
+  </testcase>
 </testsuite>

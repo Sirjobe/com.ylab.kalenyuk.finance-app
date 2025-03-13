@@ -1,1 +1,15 @@
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\AppTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\BudgetTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\GoalTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\TransactionTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\UserTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryBudgetRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryGoalRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryTransactionRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryUserRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\BudgetServiceTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\GoalServiceTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\NotificationServiceTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\StatisticsServiceTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\TransactionServiceTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\serviceTest\UserServiceTest.java
