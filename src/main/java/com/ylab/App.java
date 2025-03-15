@@ -2,31 +2,42 @@ package com.ylab;
 
 import com.ylab.entity.*;
 import com.ylab.repository.*;
+import com.ylab.repository.impl.JdbcBudgetRepository;
+import com.ylab.repository.impl.JdbcGoalRepository;
+import com.ylab.repository.impl.JdbcTransactionRepository;
+import com.ylab.repository.impl.JdbcUserRepository;
 import com.ylab.service.*;
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
 
+import java.io.FileInputStream;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class App {
     /**
      *  Репозитории (in-memory реализации)
      */
-    private static final UserRepository userRepository = new InMemoryUserRepository();
-    private static final TransactionRepository transactionRepository = new InMemoryTransactionRepository();
-    private static final BudgetRepository budgetRepository = new InMemoryBudgetRepository();
-    private static final GoalRepository goalRepository = new InMemoryGoalRepository();
+    private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final BudgetRepository budgetRepository;
+    private final GoalRepository goalRepository;
 
     /**
      *  Сервисы
      */
-    private static final UserService userService = new UserService(userRepository);
-    private static final TransactionService transactionService = new TransactionService(transactionRepository);
-    private static final BudgetService budgetService = new BudgetService(budgetRepository, transactionService);
-    private static final StatisticsService statisticsService = new StatisticsService(transactionService);
-    private static final GoalService goalService = new GoalService(goalRepository, statisticsService);
-    private static final EmailSender emailSender = new ConsoleEmailSender();
-    private static final NotificationService notificationService = new NotificationService(budgetService, goalService, emailSender);
+    private final UserService userService;
+    private final TransactionService transactionService;
+    private final BudgetService budgetService;
+    private final StatisticsService statisticsService;
+    private final GoalService goalService;
+    private final EmailSender emailSender;
+    private final NotificationService notificationService;
 
     /**
      *  Инструменты ввода вывода
@@ -34,7 +45,65 @@ public class App {
     private static final Scanner scanner = new Scanner(System.in);
     private static User currentUser = null;
 
-    public static void main(String[] args) {
+    public App(UserRepository userRepository, TransactionRepository transactionRepository,
+               BudgetRepository budgetRepository, GoalRepository goalRepository) {
+        this.userRepository = userRepository;
+        this.transactionRepository = transactionRepository;
+        this.budgetRepository = budgetRepository;
+        this.goalRepository = goalRepository;
+
+        this.userService = new UserService(userRepository);
+        this.transactionService = new TransactionService(transactionRepository);
+        this.budgetService = new BudgetService(budgetRepository, transactionService);
+        this.statisticsService = new StatisticsService(transactionService);
+        this.goalService = new GoalService(goalRepository, statisticsService);
+        this.emailSender = new ConsoleEmailSender();
+        this.notificationService = new NotificationService(budgetService, goalService, emailSender,transactionService);
+    }
+
+    public static void main(String[] args) throws Exception {
+       Properties props = new Properties();
+       try (FileInputStream fis = new FileInputStream("src/main/resources/application.properties")){
+           props.load(fis);
+       }
+
+        String changelogPath = props.getProperty("liquibase.changelog").replace("classpath:", "");
+        System.out.println("Путь к changelog: " + changelogPath);
+        java.net.URL resource = App.class.getClassLoader().getResource("db/migration/changelog-master.xml");
+        System.out.println("changelog-master.xml в classpath: " + (resource != null ? resource : "не найден"));
+
+        boolean connected = false;
+        int retries = 5;
+        while (!connected && retries > 0) {
+            try (java.sql.Connection conn = java.sql.DriverManager.getConnection(
+                    props.getProperty("db.url"),
+                    props.getProperty("db.username"),
+                    props.getProperty("db.password"))) {
+                System.out.println("Подключение к базе успешно!");
+                Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(conn));
+                Liquibase liquibase = new Liquibase(props.getProperty("liquibase.changelog"), new ClassLoaderResourceAccessor(), database);
+                liquibase.update(new Contexts());
+                connected = true;
+            } catch (SQLException e) {
+                System.out.println("База ещё не готова, повтор через 2 секунды... (" + retries + " осталось)");
+                Thread.sleep(2000);
+                retries--;
+            }
+        }
+        if (!connected) {
+            throw new RuntimeException("Не удалось подключиться к базе после нескольких попыток");
+        }
+
+       UserRepository userRepository = new JdbcUserRepository(props);
+       TransactionRepository transactionRepository = new JdbcTransactionRepository(props);
+       BudgetRepository budgetRepository = new JdbcBudgetRepository(props);
+       GoalRepository goalRepository = new JdbcGoalRepository(props);
+
+       App app = new App(userRepository, transactionRepository, budgetRepository, goalRepository);
+       app.run();
+    }
+
+    private void run() throws SQLException{
         while (true) {
             if (currentUser == null) {
                 showGuestMenu();
@@ -45,13 +114,11 @@ public class App {
     }
 
 
-    private static void showGuestMenu() {
+    private void showGuestMenu() {
         System.out.println("1. Регистрация");
         System.out.println("2. Вход");
         System.out.println("3. Выход");
-        System.out.print("Выберите действие: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Очистка буфера
+        int choice = getIntInput("Выберите действие (1-3): ", 1, 3);
 
         switch (choice) {
             case 1:
@@ -69,7 +136,7 @@ public class App {
     }
 
 
-    private static void register() {
+    private void register() {
         System.out.print("Введите email: ");
         String email = scanner.nextLine();
         System.out.print("Введите имя пользователя: ");
@@ -86,7 +153,7 @@ public class App {
     }
 
 
-    private static void login() {
+    private void login() {
         System.out.print("Введите email: ");
         String email = scanner.nextLine();
         System.out.print("Введите пароль: ");
@@ -101,7 +168,8 @@ public class App {
     }
 
 
-    private static void showUserMenu() {
+    private void showUserMenu() throws SQLException {
+        int choice = 0;
         System.out.println("1. Управление профилем");
         System.out.println("2. Управление транзакциями");
         System.out.println("3. Управление бюджетом");
@@ -111,32 +179,19 @@ public class App {
         if (currentUser.isAdmin()) {
             System.out.println("7. Управление пользователями");
             System.out.println("8. Выход");
+            choice = getIntInput("Выберите действие (1-8): ", 1, 8);
         } else {
             System.out.println("7. Выход");
+            choice = getIntInput("Выберите действие (1-7): ", 1, 7);
         }
-        System.out.print("Выберите действие: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
 
         switch (choice) {
-            case 1:
-                manageProfile();
-                break;
-            case 2:
-                manageTransactions();
-                break;
-            case 3:
-                manageBudgets();
-                break;
-            case 4:
-                manageGoals();
-                break;
-            case 5:
-                viewStatistics();
-                break;
-            case 6:
-                getNotifications();
-                break;
+            case 1: manageProfile(); break;
+            case 2: manageTransactions(); break;
+            case 3: manageBudgets(); break;
+            case 4: manageGoals(); break;
+            case 5: viewStatistics(); break;
+            case 6: getNotifications(); break;
             case 7:
                 if (currentUser.isAdmin()) {
                     manageUsers();
@@ -151,35 +206,26 @@ public class App {
                     System.out.println("Неверный выбор");
                 }
                 break;
-            default:
-                System.out.println("Неверный выбор");
+            default: System.out.println("Неверный выбор");
         }
     }
 
 
-    private static void manageProfile() {
+    private void manageProfile() {
         System.out.println("1. Редактировать профиль");
         System.out.println("2. Удалить аккаунт");
         System.out.println("3. Назад");
-        System.out.print("Выберите действие: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice = getIntInput("Выберите действие (1-3): ", 1, 3);
 
         switch (choice) {
-            case 1:
-                editProfile();
-                break;
-            case 2:
-                deleteAccount();
-                break;
-            case 3:
-                return;
-            default:
-                System.out.println("Неверный выбор");
+            case 1: editProfile(); break;
+            case 2: deleteAccount(); break;
+            case 3: return;
+            default: System.out.println("Неверный выбор");
         }
     }
 
-    private static void editProfile() {
+    private void editProfile() {
         System.out.print("Введите новый email (или Enter, чтобы оставить прежний): ");
         String newEmail = scanner.nextLine();
         System.out.print("Введите новое имя пользователя (или Enter, чтобы оставить прежнее): ");
@@ -197,7 +243,7 @@ public class App {
         }
     }
 
-    private static void deleteAccount() {
+    private void deleteAccount() {
         System.out.print("Вы уверены, что хотите удалить аккаунт? (да/нет): ");
         String confirmation = scanner.nextLine();
         if (confirmation.equalsIgnoreCase("да")) {
@@ -212,39 +258,27 @@ public class App {
     }
 
 
-    private static void manageTransactions() {
+    private void manageTransactions() throws SQLException {
         while (true) {
             System.out.println("1. Добавить транзакцию");
             System.out.println("2. Редактировать транзакцию");
             System.out.println("3. Удалить транзакцию");
             System.out.println("4. Просмотреть транзакции");
             System.out.println("5. Назад");
-            System.out.print("Выберите действие: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = getIntInput("Выберите действие (1-5): ", 1, 5);
 
             switch (choice) {
-                case 1:
-                    addTransaction();
-                    break;
-                case 2:
-                    editTransaction();
-                    break;
-                case 3:
-                    deleteTransaction();
-                    break;
-                case 4:
-                    viewTransactions();
-                    break;
-                case 5:
-                    return;
-                default:
-                    System.out.println("Неверный выбор");
+                case 1: addTransaction(); break;
+                case 2: editTransaction(); break;
+                case 3: deleteTransaction(); break;
+                case 4: viewTransactions(); break;
+                case 5: return;
+                default: System.out.println("Неверный выбор");
             }
         }
     }
 
-    private static void addTransaction() {
+    private void addTransaction() throws SQLException{
         System.out.print("Введите сумму: ");
         double amount = scanner.nextDouble();
         scanner.nextLine();
@@ -265,7 +299,7 @@ public class App {
         }
     }
 
-    private static void editTransaction() {
+    private void editTransaction() throws SQLException {
         System.out.print("Введите ID транзакции: ");
         int id = scanner.nextInt();
         scanner.nextLine();
@@ -291,7 +325,7 @@ public class App {
         }
     }
 
-    private static void deleteTransaction() {
+    private void deleteTransaction()  throws SQLException{
         System.out.print("Введите ID транзакции: ");
         int id = scanner.nextInt();
         scanner.nextLine();
@@ -304,7 +338,7 @@ public class App {
         }
     }
 
-    private static void viewTransactions() {
+    private void viewTransactions() throws SQLException {
         List<Transaction> transactions = transactionService.getUserTransaction(currentUser, currentUser, null, null, null, null);
         if (transactions.isEmpty()) {
             System.out.println("Нет транзакций");
@@ -314,35 +348,25 @@ public class App {
     }
 
 
-    private static void manageBudgets() {
+    private void manageBudgets() throws SQLException {
         while (true) {
             System.out.println("1. Установить бюджет");
             System.out.println("2. Удалить бюджет");
             System.out.println("3. Просмотреть бюджеты");
             System.out.println("4. Назад");
-            System.out.print("Выберите действие: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = getIntInput("Выберите действие (1-7): ", 1, 4);
 
             switch (choice) {
-                case 1:
-                    setBudget();
-                    break;
-                case 2:
-                    deleteBudget();
-                    break;
-                case 3:
-                    viewBudgets();
-                    break;
-                case 4:
-                    return;
-                default:
-                    System.out.println("Неверный выбор");
+                case 1: setBudget(); break;
+                case 2: deleteBudget(); break;
+                case 3: viewBudgets(); break;
+                case 4: return;
+                default: System.out.println("Неверный выбор");
             }
         }
     }
 
-    private static void setBudget() {
+    private void setBudget() throws SQLException {
         System.out.print("Введите лимит: ");
         double limit = scanner.nextDouble();
         System.out.print("Введите год: ");
@@ -359,7 +383,7 @@ public class App {
         }
     }
 
-    private static void deleteBudget() {
+    private void deleteBudget() throws SQLException {
         System.out.print("Введите ID бюджета: ");
         int id = scanner.nextInt();
         scanner.nextLine();
@@ -372,7 +396,7 @@ public class App {
         }
     }
 
-    private static void viewBudgets() {
+    private void viewBudgets() throws SQLException {
         List<Budget> budgets = budgetService.getUserBudgets(currentUser, currentUser);
         if (budgets.isEmpty()) {
             System.out.println("Нет бюджетов");
@@ -382,35 +406,25 @@ public class App {
     }
 
 
-    private static void manageGoals() {
+    private void manageGoals() throws SQLException {
         while (true) {
             System.out.println("1. Установить цель");
             System.out.println("2. Удалить цель");
             System.out.println("3. Просмотреть цели");
             System.out.println("4. Назад");
-            System.out.print("Выберите действие: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = getIntInput("Выберите действие (1-4): ", 1, 4);
 
             switch (choice) {
-                case 1:
-                    setGoal();
-                    break;
-                case 2:
-                    deleteGoal();
-                    break;
-                case 3:
-                    viewGoals();
-                    break;
-                case 4:
-                    return;
-                default:
-                    System.out.println("Неверный выбор");
+                case 1: setGoal(); break;
+                case 2: deleteGoal(); break;
+                case 3: viewGoals(); break;
+                case 4: return;
+                default: System.out.println("Неверный выбор");
             }
         }
     }
 
-    private static void setGoal() {
+    private void setGoal() throws SQLException{
         System.out.print("Введите целевую сумму: ");
         double targetAmount = scanner.nextDouble();
         scanner.nextLine();
@@ -427,7 +441,7 @@ public class App {
         }
     }
 
-    private static void deleteGoal() {
+    private void deleteGoal() throws SQLException {
         System.out.print("Введите ID цели: ");
         int id = scanner.nextInt();
         scanner.nextLine();
@@ -440,7 +454,7 @@ public class App {
         }
     }
 
-    private static void viewGoals() {
+    private void viewGoals() throws SQLException {
         List<Goal> goals = goalService.getUserGoals(currentUser);
         if (goals.isEmpty()) {
             System.out.println("Нет целей");
@@ -450,13 +464,13 @@ public class App {
     }
 
 
-    private static void viewStatistics() {
+    private void viewStatistics() throws SQLException {
         double balance = statisticsService.calculateCurrentBalance(currentUser, currentUser);
         System.out.println("Текущий баланс: " + balance);
     }
 
 
-    private static void getNotifications() {
+    private void getNotifications() throws SQLException {
         List<String> budgetNotifications = notificationService.checkBudgetsAndNotify(currentUser, currentUser);
         List<String> goalNotifications = notificationService.checkGoalsAndNotify(currentUser, currentUser);
 
@@ -470,53 +484,55 @@ public class App {
         }
     }
 
-    private static void manageUsers() {
+    private void manageUsers() throws SQLException {
         while (true) {
             System.out.println("1. Просмотреть пользователей");
             System.out.println("2. Блокировать пользователя");
             System.out.println("3. Удалить пользователя");
             System.out.println("4. Назад");
-            System.out.print("Выберите действие: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = getIntInput("Выберите действие (1-4): ", 1, 4);
 
             switch (choice) {
-                case 1:
-                    viewUsers();
-                    break;
-                case 2:
-                    blockUser();
-                    break;
-                case 3:
-                    deleteUser();
-                    break;
-                case 4:
-                    return;
-                default:
-                    System.out.println("Неверный выбор");
+                case 1: viewUsers(); break;
+                case 2: blockUser(); break;
+                case 3: deleteUser(); break;
+                case 4: return;
+                default: System.out.println("Неверный выбор");
             }
         }
     }
 
-    private static void viewUsers() {
+    private void viewUsers() throws SQLException {
         List<User> users = userService.getAllUsers(currentUser);
-        users.forEach(u -> System.out.println(u.getEmail() + " - " + u.getUsername() + " - " + (u.isBlocked() ? "Заблокирован" : "Активен")));
-        
+        for (User u : users) {
+            System.out.println(u.getEmail() + " - " + u.getUsername() + " - " +
+                    (u.isBlocked() ? "Заблокирован" : "Активен"));
+
+            List<Transaction> transactions = transactionService.getUserTransaction(currentUser, u, null, null, null, null);
+            if (transactions.isEmpty()) {
+                System.out.println("Нет транзакций");
+            } else {
+                transactions.forEach(System.out::println);
+            }
+            System.out.println(); // Пустая строка для разделения пользователей
+        }
     }
 
-    private static void blockUser() {
+    private void blockUser() throws SQLException {
         System.out.print("Введите email пользователя: ");
         String email = scanner.nextLine();
-
         try {
-            userService.blockUser(currentUser, email);
-            System.out.println("Пользователь заблокирован");
+            if(userService.blockUser(currentUser, email)){
+                System.out.println("Пользователь заблокирован");
+            }else{
+                System.out.println("Пользователь разблокирован");
+            }
         } catch (IllegalArgumentException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
-    private static void deleteUser() {
+    private void deleteUser() {
         System.out.print("Введите email пользователя: ");
         String email = scanner.nextLine();
 
@@ -525,6 +541,24 @@ public class App {
             System.out.println("Пользователь удален");
         } catch (IllegalArgumentException e) {
             System.out.println("Ошибка: " + e.getMessage());
+        }
+    }
+
+    private int getIntInput(String prompt, int min, int max) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                String input = scanner.nextLine();
+                int value = Integer.parseInt(input);
+
+                if (value >= min && value <= max) {
+                    return value;
+                }
+
+                System.out.printf("Введите число от %d до %d!%n", min, max);
+            } catch (NumberFormatException e) {
+                System.out.println("Ошибка: Требуется целое число!");
+            }
         }
     }
 }

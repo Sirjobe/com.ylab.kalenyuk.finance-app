@@ -7,9 +7,9 @@ import java.util.*;
 public class InMemoryUserRepository implements UserRepository   {
     private List<User> users = new ArrayList<>();
 
-       public void test(){
-           users.add(new User("kalenyuk@mail.ru","Sergey","12345678", false));
-        }
+    public void test(){
+        users.add(new User("kalenyuk@mail.ru","Sergey","12345678", false));
+    }
 
     /**
      * Сохраняет нового пользователя или обновляет существующего.
@@ -32,7 +32,6 @@ public class InMemoryUserRepository implements UserRepository   {
     public User findByEmail(String email) {
         return users.stream()
                 .filter(u -> u.getEmail().equals(email))
-                .filter(u->!u.isBlocked())
                 .findFirst()
                 .orElse(null);
     }

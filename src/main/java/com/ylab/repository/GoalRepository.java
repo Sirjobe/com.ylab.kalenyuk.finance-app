@@ -3,6 +3,7 @@ package com.ylab.repository;
 import com.ylab.entity.Goal;
 import com.ylab.entity.User;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public interface GoalRepository {
      *
      * @param goal цель для сохранения
      */
-    void save (Goal goal);
+    void save (Goal goal) throws SQLException;
 
     /**
      * Находит все цели пользователя.
@@ -22,7 +23,7 @@ public interface GoalRepository {
      * @param user пользователь, чьи цели нужно найти
      * @return список целей
      */
-    List<Goal> findByUser (User user);
+    List<Goal> findByUser (User user) throws SQLException;
 
     /**
      * Находит цели по её идентификатору.
@@ -30,14 +31,14 @@ public interface GoalRepository {
      * @param id идентификатор транзакции
      * @return транзакция или null, если не найдена
      */
-    Goal findById (int id);
+    Goal findById (int id) throws SQLException;
 
     /**
      * Удаляет цель по её идентификатору.
      *
      * @param id идентификатор цели
      */
-    void deleteById (int id);
+    void deleteById (int id) throws SQLException;
 
 
 }

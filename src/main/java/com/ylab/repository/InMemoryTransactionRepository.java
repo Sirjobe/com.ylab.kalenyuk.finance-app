@@ -21,6 +21,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
                 .collect(Collectors.toList());
     }
 
+
     /**
      * Сохраняет новую транзакцию.
      *

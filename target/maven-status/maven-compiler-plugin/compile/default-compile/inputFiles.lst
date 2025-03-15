@@ -6,6 +6,10 @@ C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\entity\User.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\BudgetRepository.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\GoalRepository.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\impl\JdbcBudgetRepository.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\impl\JdbcGoalRepository.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\impl\JdbcTransactionRepository.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\impl\JdbcUserRepository.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\InMemoryBudgetRepository.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\InMemoryGoalRepository.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\main\java\com\ylab\repository\InMemoryTransactionRepository.java

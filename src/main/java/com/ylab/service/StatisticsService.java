@@ -5,6 +5,7 @@ import com.ylab.entity.TransactionType;
 import com.ylab.entity.User;
 
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -27,17 +28,22 @@ public class StatisticsService {
      * @param user пользователь, для которого считается баланс
      * @return текущий баланс (доходы минус расходы)
      */
-    public double calculateCurrentBalance(User admin, User user){
+    public double calculateCurrentBalance(User admin, User user) {
         if (!admin.isAdmin() && !admin.getEmail().equals(user.getEmail())) {
             throw new IllegalArgumentException("Вы можете просматривать только свой баланс");
         }
+        if (user.isBlocked()) {
+            throw new IllegalArgumentException("Нельзя рассчитать баланс для заблокированного пользователя");
+        }
+        double totalIncome = 0;
+        double totalExpense = 0;
         List<Transaction> transaction = transactionService.getUserTransaction(admin, user, null, null, null, null);
-        double totalIncome = transaction.stream()
-                .filter(t->t.getType()== TransactionType.INCOME)
+        totalIncome = transaction.stream()
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
-        double totalExpense = transaction.stream()
-                .filter(t->t.getType() == TransactionType.EXPENSE)
+        totalExpense = transaction.stream()
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         return totalIncome - totalExpense;
@@ -51,14 +57,16 @@ public class StatisticsService {
      * @param endDate   конечная дата периода (null для всех транзакций)
      * @return массив [доход, расход]
      */
-    public double[] calculateIncomeAndExpense(User admin, User user, LocalDate startDate, LocalDate endDate){
-        List<Transaction> transaction = transactionService.getUserTransaction(admin, user,startDate,endDate,null,null);
-        double totalIncome = transaction.stream()
-                .filter(t->t.getType()== TransactionType.INCOME)
+    public double[] calculateIncomeAndExpense(User admin, User user, LocalDate startDate, LocalDate endDate) {
+        double totalIncome = 0;
+        double totalExpense = 0;
+        List<Transaction> transaction = transactionService.getUserTransaction(admin, user, startDate, endDate, null, null);
+        totalIncome = transaction.stream()
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
-        double totalExpense = transaction.stream()
-                .filter(t->t.getType() == TransactionType.EXPENSE)
+        totalExpense = transaction.stream()
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         return new double[]{totalIncome, totalExpense};
@@ -73,7 +81,8 @@ public class StatisticsService {
      * @return карта с категориями и суммами расходов
      */
     public Map<String, Double> analyzeExpenseByCategory(User admin, User user, LocalDate startDate, LocalDate endDate) {
-        List<Transaction> transactions = transactionService.getUserTransaction(admin, user, startDate, endDate, null, TransactionType.EXPENSE);
+        List<Transaction> transactions = null;
+        transactions = transactionService.getUserTransaction(admin, user, startDate, endDate, null, TransactionType.EXPENSE);
         return transactions.stream().collect(Collectors.groupingBy(
                 Transaction::getCategory,
                 Collectors.summingDouble(Transaction::getAmount)));

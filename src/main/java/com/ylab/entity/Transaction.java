@@ -11,7 +11,7 @@ public class Transaction {
     private String category;
     private LocalDate date;
     private TransactionType type;
-    private static int id = 1;
+    private int id;
     private String email;
 
     /**
@@ -25,7 +25,6 @@ public class Transaction {
      * @param email почта пользователя
      */
     public Transaction(double amount, String description, String category, LocalDate date, TransactionType type, String email) {
-        this.id = id++;
         this.amount = amount;
         this.description = description;
         this.category = category;
@@ -34,11 +33,12 @@ public class Transaction {
         this.email = email;
     }
 
-    /**
-     * Возвращает идентификатор транзакции.
-     *
-     * @return идентификатор транзакции
-     */
+    public Transaction() {}
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
@@ -71,6 +71,10 @@ public class Transaction {
         return type;
     }
 
+    public String getTypeString() {
+        return type.toString();
+    }
+
     public void setType(TransactionType type) {
         this.type = type;
     }
@@ -87,12 +91,20 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction{" +
+        return "ID "+getId()+" {" +
                 "Сумма транзакции =" + amount +
                 ", Категория ='" + category + '\'' +
                 ", Дата транзакции ='" + date + '\'' +
                 ", Тип =" + type +
                 ", Описание =" + description +
                 '}';
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

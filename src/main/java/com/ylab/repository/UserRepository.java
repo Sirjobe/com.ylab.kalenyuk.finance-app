@@ -2,6 +2,7 @@ package com.ylab.repository;
 
 import com.ylab.entity.User;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public interface UserRepository {
      *
      * @return список пользователей
      */
-    List<User> findAll ();
+    List<User> findAll () throws SQLException;
 
 
 
