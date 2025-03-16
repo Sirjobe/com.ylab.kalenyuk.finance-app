@@ -13,6 +13,7 @@ com\ylab\service\UserService.class
 com\ylab\repository\InMemoryTransactionRepository.class
 com\ylab\service\GoalService.class
 com\ylab\repository\InMemoryUserRepository.class
+com\ylab\Menu.class
 com\ylab\repository\impl\JdbcGoalRepository.class
 com\ylab\repository\GoalRepository.class
 com\ylab\repository\impl\JdbcBudgetRepository.class

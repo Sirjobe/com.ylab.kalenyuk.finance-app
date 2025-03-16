@@ -108,19 +108,19 @@ public class BudgetService {
         try {
             Budget budget = budgetRepository.findById(budgetId);
             if (budget == null) {
-                throw new IllegalArgumentException("Бюджет не найден");
+                return "Бюджет не найден";
             }
-            if (!budget.getEmail().equals(targetUser.getEmail()) && !targetUser.isAdmin()) {
+            if (!budget.getEmail().equals(targetUser.getEmail()) && !admin.isAdmin()) {
                 throw new IllegalArgumentException("Вы можете проверять только свои бюджеты");
             }
 
             List<Transaction> transactions = transactionService.getTransactionsByUserAndPeriod(
-                    targetUser, // Передаем объект User
+                    targetUser,
                     budget.getStart(),
                     budget.getEnd()
             );
             double totalExpenses = transactions.stream()
-                    .filter(t -> "EXPENSE".equalsIgnoreCase(t.getTypeString()))
+                    .filter(t -> t.getType() == TransactionType.EXPENSE) // Исправлено
                     .mapToDouble(Transaction::getAmount)
                     .sum();
 
@@ -128,11 +128,14 @@ public class BudgetService {
                 double overrun = totalExpenses - budget.getLimit();
                 return String.format("Бюджет превышен! Расходы: %.2f, Лимит: %.2f, Превышение: %.2f",
                         totalExpenses, budget.getLimit(), overrun);
+            } else {
+                return String.format("Бюджет в пределах нормы: потрачено %.2f из %.2f",
+                        totalExpenses, budget.getLimit());
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Ошибка базы данных: " + e.getMessage());
+            return "Ошибка при проверке бюджета: " + e.getMessage();
         }
-        return null;
     }
 
     public Budget findById(int budgetId) throws SQLException {

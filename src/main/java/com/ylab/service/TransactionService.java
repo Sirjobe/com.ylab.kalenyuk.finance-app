@@ -1,5 +1,6 @@
 package com.ylab.service;
 
+import com.ylab.entity.Budget;
 import com.ylab.entity.Transaction;
 import com.ylab.entity.TransactionType;
 import com.ylab.entity.User;
@@ -15,31 +16,42 @@ import java.util.stream.Collectors;
  */
 public class TransactionService {
     private final TransactionRepository transactionRepository;
+    private BudgetService budgetService; // Зависимость для проверки бюджета
+    private NotificationService notificationService; // Setter-инъекция
 
     public TransactionService(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
     }
 
+    public void setBudgetService(BudgetService budgetService) {
+        this.budgetService = budgetService;
+    }
+
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
     /**
-     * Создание новой транзакции.
+     * Создание новой транзакции с проверкой бюджета при расходах.
      *
-     * @param amount сумма транзакции
+     * @param amount      сумма транзакции
      * @param description описание транзакции
-     * @param category категория транзакции
-     * @param date дата транзакции
-     * @param type тип транзакции (доход или расход)
-     * @param email почта пользователя
-     * @throws IllegalArgumentException если email уже занят или данные некорректны
+     * @param category    категория транзакции
+     * @param date        дата транзакции
+     * @param type        тип транзакции (доход или расход)
+     * @param email       почта пользователя
+     * @throws IllegalArgumentException если данные некорректны
+     * @throws SQLException             если ошибка базы данных
      */
-    public void createTransaction(double amount, String description, String category, LocalDate date
-            , TransactionType type, String email) throws SQLException {
+    public void createTransaction(double amount, String description, String category, LocalDate date,
+                                  TransactionType type, String email) throws SQLException {
         if (amount <= 0) {
             throw new IllegalArgumentException("Сумма транзакций должна быть положительной");
         }
-        if (description == null||description.trim().isEmpty()) {
+        if (description == null || description.trim().isEmpty()) {
             throw new IllegalArgumentException("Описание не может быть пустым");
         }
-        if (category == null||category.trim().isEmpty()) {
+        if (category == null || category.trim().isEmpty()) {
             throw new IllegalArgumentException("Категория не может быть пустой");
         }
         if (date == null) {
@@ -48,8 +60,27 @@ public class TransactionService {
         if (type == null) {
             throw new IllegalArgumentException("Тип транзакции обязателен");
         }
+
         Transaction transaction = new Transaction(amount, description, category, date, type, email);
         transactionRepository.save(transaction);
+
+        if (type == TransactionType.EXPENSE && notificationService != null) {
+            User user = new User(email, "", "", false);
+            List<Budget> budgets = budgetService.getUserBudgets(user, user);
+            for (Budget budget : budgets) {
+                if (isDateWithinBudgetPeriod(date, budget)) {
+                    String notification = budgetService.checkBudget(budget.getId(), user, user);
+                    if (notification != null) {
+                        notificationService.sendImmediateNotification(user, "Превышение бюджета", notification);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isDateWithinBudgetPeriod(LocalDate date, Budget budget) {
+        return (date.isAfter(budget.getStart()) && date.isBefore(budget.getEnd())) ||
+                date.equals(budget.getStart()) || date.equals(budget.getEnd());
     }
 
     /**

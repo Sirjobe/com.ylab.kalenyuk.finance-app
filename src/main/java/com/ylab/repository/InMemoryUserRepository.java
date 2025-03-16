@@ -3,23 +3,25 @@ package com.ylab.repository;
 import com.ylab.entity.User;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class InMemoryUserRepository implements UserRepository   {
-    private List<User> users = new ArrayList<>();
+public class InMemoryUserRepository implements UserRepository {
+    private Map<String, User> users = new HashMap<>();
+    private final AtomicInteger idGenerator = new AtomicInteger(0);
 
-    public void test(){
-        users.add(new User("kalenyuk@mail.ru","Sergey","12345678", false));
-    }
 
     /**
      * Сохраняет нового пользователя или обновляет существующего.
+     * Если у пользователя нет ID, генерирует новый уникальный ID.
      *
      * @param user пользователь для сохранения
      */
     @Override
     public void save(User user) {
-        users.removeIf(u -> u.getEmail().equals(user.getEmail()));
-        users.add(user);
+        if (user.getId() == 0) {
+            user.setId(idGenerator.incrementAndGet());
+        }
+        users.put(user.getEmail(), user);
     }
 
     /**
@@ -30,10 +32,7 @@ public class InMemoryUserRepository implements UserRepository   {
      */
     @Override
     public User findByEmail(String email) {
-        return users.stream()
-                .filter(u -> u.getEmail().equals(email))
-                .findFirst()
-                .orElse(null);
+        return users.get(email);
     }
 
     /**
@@ -43,7 +42,7 @@ public class InMemoryUserRepository implements UserRepository   {
      */
     @Override
     public void deleteByEmail(String email) {
-        users.removeIf(u -> u.getEmail().equals(email));
+        users.remove(email);
     }
 
     /**
@@ -53,6 +52,6 @@ public class InMemoryUserRepository implements UserRepository   {
      */
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(users);
+        return new ArrayList<>(users.values());
     }
 }

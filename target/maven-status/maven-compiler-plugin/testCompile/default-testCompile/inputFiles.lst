@@ -2,6 +2,11 @@ C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\GoalTest.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\TransactionTest.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\entityTest\UserTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\MenuTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\impTest\JdbcBudgetRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\impTest\JdbcGoalRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\impTest\JdbcTransactionRepositoryTest.java
+C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\impTest\JdbcUserRepositoryTest.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryBudgetRepositoryTest.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryGoalRepositoryTest.java
 C:\Users\user\IdeaProjects\com.ylab.kalenyuk.finance-app\src\test\java\com\ylab\repositoryTest\InMemoryTransactionRepositoryTest.java

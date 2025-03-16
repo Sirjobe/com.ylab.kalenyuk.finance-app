@@ -44,7 +44,7 @@ public class GoalService {
             throw new IllegalArgumentException("Дата окончания не может быть в прошлом");
         }
 
-        Goal goal = new Goal(targetAmount, endDate, LocalDate.now(), description , user.getEmail());
+        Goal goal = new Goal(targetAmount, LocalDate.now(), endDate , description , user.getEmail());
         goalRepository.save(goal);
     }
 
