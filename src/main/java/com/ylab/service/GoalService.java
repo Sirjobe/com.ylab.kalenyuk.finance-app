@@ -122,4 +122,14 @@ public class GoalService {
 
     }
 
+    /**
+     * Находит цель по её идентификатору.
+     *
+     * @param id идентификатор транзакции
+     * @return объект Goal или null, если транзакция не найдена
+     * @throws SQLException если произошла ошибка базы данных
+     */
+    public Goal findById(int id) throws SQLException {
+        return goalRepository.findById(id);
+    }
 }

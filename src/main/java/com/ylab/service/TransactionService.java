@@ -198,4 +198,15 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Находит транзакцию по её идентификатору.
+     *
+     * @param id идентификатор транзакции
+     * @return объект Transaction или null, если транзакция не найдена
+     * @throws SQLException если произошла ошибка базы данных
+     */
+    public Transaction findById(int id) throws SQLException {
+        return transactionRepository.findById(id);
+    }
+
 }
