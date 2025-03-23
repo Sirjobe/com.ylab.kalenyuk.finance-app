@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: ylab
+      changes:
+        - insert:
+            tableName: users
+            schemaName: finance
+            columns:
+              - column:
+                  name: email
+                  value: "test@example.com"
+              - column:
+                  name: username
+                  value: "testUser"
+              - column:
+                  name: password
+                  value: "password123"
+              - column:
+                  name: is_admin
+                  valueBoolean: false
+              - column:
+                  name: is_blocked
+                  valueBoolean: false
+        - insert:
+            tableName: goals
+            schemaName: finance
+            columns:
+              - column:
+                  name: target_amount
+                  valueNumeric: 1000.0
+              - column:
+                  name: start_date
+                  valueDate: "2025-03-01"
+              - column:
+                  name: end_date
+                  valueDate: "2025-12-31"
+              - column:
+                  name: description
+                  value: "Vacation"
+              - column:
+                  name: email
+                  value: "test@example.com"

@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 
 public class User {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-     private final String email;
+    private final String email;
+    private int id;
     private String password;
     private String username;
     private boolean blocked;
@@ -33,6 +34,18 @@ public class User {
       this.blocked = false;
 
     }
+
+     public User(){
+         this.email = null;
+     }
+
+     public int getId() {
+         return id;
+     }
+
+     public void setId(int id) {
+         this.id = id;
+     }
 
      public boolean isAdmin() {
         return isAdmin;
@@ -69,14 +82,14 @@ public class User {
   }
 
     private boolean isValidEmail(String email) {
-      if (email == null || email.isEmpty()) {
-          return false;
-      }
+      if (email == null || email.isEmpty()) return false;
       return EMAIL_PATTERN.matcher(email).matches();
   }
 
-    public void setAdmin(boolean b) {
-      this.isAdmin = b;
+    public boolean getValidEmail(String email) {
+         return isValidEmail(email);
     }
+
+
 }
 

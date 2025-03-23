@@ -25,38 +25,49 @@ public class InMemoryTransactionRepositoryTest {
 
     @Test
     void testSaveAndFindById() {
-        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2023, 1, 1), TransactionType.INCOME, user.getEmail());
+        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2025, 1, 1), TransactionType.INCOME, user.getEmail());
         repository.save(transaction);
+        assertEquals(1, transaction.getId());
+
         Transaction found = repository.findById(1);
         assertNotNull(found);
         assertEquals(100.0, found.getAmount());
         assertEquals("Salary", found.getDescription());
     }
 
+
+    @Test
+    void testFindByIdNotFound() {
+        Transaction found = repository.findById(999);
+        assertNull(found);
+    }
+
     @Test
     void testFindByUser() {
-        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2023, 1, 1), TransactionType.INCOME, user.getEmail());
-        repository.save(transaction);
+        Transaction transaction1 = new Transaction(100.0, "Salary", "Income", LocalDate.of(2025, 1, 1), TransactionType.INCOME, user.getEmail());
+        Transaction transaction2 = new Transaction(200.0, "Food", "Expense", LocalDate.of(2025, 1, 2), TransactionType.EXPENSE, user.getEmail());
+        repository.save(transaction1);
+        repository.save(transaction2);
+
         List<Transaction> transactions = repository.findByUser(user);
-        assertEquals(1, transactions.size());
-        assertEquals(transaction, transactions.get(0));
+        assertEquals(2, transactions.size());
+        assertTrue(transactions.contains(transaction1));
+        assertTrue(transactions.contains(transaction2));
     }
 
     @Test
     void testDeleteById() {
-        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2023, 1, 1), TransactionType.INCOME, user.getEmail());
+        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2025, 1, 1), TransactionType.INCOME, user.getEmail());
         repository.save(transaction);
-        repository.deleteById(1);
-        assertNull(repository.findById(1));
+        repository.deleteById(transaction.getId());
+
+        Transaction found = repository.findById(transaction.getId());
+        assertNull(found);
     }
 
     @Test
-    void testUpdateTransaction() {
-        Transaction transaction = new Transaction(100.0, "Salary", "Income", LocalDate.of(2023, 1, 1), TransactionType.INCOME, user.getEmail());
-        repository.save(transaction);
-        Transaction updatedTransaction = new Transaction(200.0, "Bonus", "Extra", LocalDate.of(2023, 1, 2), TransactionType.INCOME, user.getEmail());
-        repository.save(updatedTransaction); // ID остается 1 из-за бага
-        Transaction found = repository.findById(1);
-        assertEquals(200.0, found.getAmount());
+    void testDeleteByIdNotFound() {
+        repository.deleteById(999); // Удаление несуществующего ID не должно вызывать ошибку
+        assertNull(repository.findById(999));
     }
 }

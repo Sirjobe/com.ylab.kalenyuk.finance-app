@@ -5,18 +5,25 @@ import com.ylab.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class InMemoryGoalRepository implements GoalRepository {
     private List<Goal> goals = new ArrayList<>();
+    private final AtomicInteger idGenerator = new AtomicInteger(0);
+
     /**
-     * Сохраняет новую цель.
+     * Сохраняет новую цель. Если ID равен 0, генерирует новый уникальный ID.
      *
      * @param goal цель для сохранения
      */
     @Override
     public void save(Goal goal) {
-        goals.removeIf(g -> g.getId() == goal.getId());
+        if (goal.getId() == 0) {
+            goal.setId(idGenerator.incrementAndGet());
+        } else {
+            goals.removeIf(g -> g.getId() == goal.getId());
+        }
         goals.add(goal);
     }
 

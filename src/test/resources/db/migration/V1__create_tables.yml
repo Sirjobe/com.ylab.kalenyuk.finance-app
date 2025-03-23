@@ -1,0 +1,170 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0
+      author: user
+      changes:
+        - createSchema:
+            schemaName: finance
+  - changeSet:
+      id: 1
+      author: ylab
+      changes:
+        - createSequence:
+            sequenceName: finance.user_seq
+            schemaName: finance
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: finance.transaction_seq
+            schemaName: finance
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: finance.budget_seq
+            schemaName: finance
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: finance.goal_seq
+            schemaName: finance
+            startValue: 1
+            incrementBy: 1
+        - createTable:
+            tableName: users
+            schemaName: finance
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  defaultValueSequenceNext: finance.user_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_admin
+                  type: boolean
+                  defaultValue: false
+              - column:
+                  name: is_blocked
+                  type: boolean
+                  defaultValue: false
+        - createTable:
+            tableName: transactions
+            schemaName: finance
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  defaultValueSequenceNext: finance.transaction_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: amount
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: budgets
+            schemaName: finance
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  defaultValueSequenceNext: finance.budget_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: limit_amount
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: goals
+            schemaName: finance
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  defaultValueSequenceNext: finance.goal_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: target_amount
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

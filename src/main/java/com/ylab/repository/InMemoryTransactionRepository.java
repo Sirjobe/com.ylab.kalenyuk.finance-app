@@ -5,10 +5,12 @@ import com.ylab.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class InMemoryTransactionRepository implements TransactionRepository {
     private List<Transaction> transactions = new ArrayList<>();
+    private final AtomicInteger idGenerator = new AtomicInteger(0);
     /**
      * Находит все транзакции пользователя.
      *
@@ -21,6 +23,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
                 .collect(Collectors.toList());
     }
 
+
     /**
      * Сохраняет новую транзакцию.
      *
@@ -28,9 +31,14 @@ public class InMemoryTransactionRepository implements TransactionRepository {
      */
     @Override
     public void save(Transaction transaction) {
-        transactions.removeIf(t -> t.getId() == transaction.getId());
+        if (transaction.getId() == 0) {
+            transaction.setId(idGenerator.incrementAndGet());
+        } else {
+            transactions.removeIf(t -> t.getId() == transaction.getId());
+        }
         transactions.add(transaction);
     }
+
 
     /**
      * Находит транзакцию по её идентификатору.

@@ -4,83 +4,100 @@ import com.ylab.entity.Budget;
 import com.ylab.entity.Goal;
 import com.ylab.entity.User;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Сервис для управления уведомлениями о достижении лимитов и целей.
- */
 public class NotificationService {
     private final BudgetService budgetService;
     private final GoalService goalService;
     private final EmailSender emailSender;
+    private final TransactionService transactionService;
 
-    public NotificationService(BudgetService budgetService, GoalService goalService, EmailSender emailSender) {
+    public NotificationService(BudgetService budgetService, GoalService goalService, EmailSender emailSender, TransactionService transactionService) {
         this.budgetService = budgetService;
         this.goalService = goalService;
         this.emailSender = emailSender;
+        this.transactionService = transactionService;
     }
 
-    /**
-     * Проверяет все бюджеты пользователя и отправляет уведомления о превышении.
-     *
-     * @param user пользователь
-     * @return список уведомлений (для API)
-     */
     public List<String> checkBudgetsAndNotify(User user, User admin) {
-        List<Budget> budgets = budgetService.getUserBudgets(user,admin);
-        List<String> notifications = budgets.stream()
-                .map(budget -> {
-                    String notification = budgetService.checkBudget(budget.getId(), user, admin);
-                    if (notification != null) {
-                        sendEmailNotification(user, "Превышение бюджета", notification);
-                        return notification;
-                    }
-                    return null;
-                })
-                .filter(n -> n != null)
-                .toList();
-        return notifications;
-    }
+        List<String> notifications = new ArrayList<>();
+        try {
+            List<Budget> budgets = budgetService.getUserBudgets(user, admin);
+            if (budgets.isEmpty()) {
+                return notifications;
+            }
 
-    /**
-     * Проверяет все цели пользователя и отправляет уведомления о прогрессе.
-     *
-     * @param user пользователь
-     * @return список уведомлений (для API)
-     */
-    public List<String> checkGoalsAndNotify(User user, User admin) {
-        List<Goal> goals = goalService.getUserGoals(user);
-        List<String> notifications = goals.stream()
-                .map(goal -> {
-                    String progress = goalService.trackGoalProgress(goal.getId(), user, admin);
-                    if (progress.contains("Цель достигнута")) {
-                        String message = "Поздравляем! " + progress;
-                        sendEmailNotification(user, "Достижение цели", message);
-                        return message;
-                    } else if (progress.contains("Осталось накопить")) {
-                        // Можно добавить условие, например, уведомлять, если осталось менее 10%
-                        double remaining = Double.parseDouble(progress.split("Осталось накопить: ")[1].split("\n")[0]);
-                        if (remaining < goal.getTargetAmount() * 0.1) { // Осталось менее 10%
-                            String message = "Вы близки к цели!\n" + progress;
-                            sendEmailNotification(user, "Прогресс по цели", message);
-                            return message;
+            notifications = budgets.stream()
+                    .map(budget -> {
+                        String notification = budgetService.checkBudget(budget.getId(), user, admin);
+                        if (notification != null) {
+                            sendEmailNotification(user, "Превышение бюджета", notification);
+                            return notification;
                         }
-                    }
-                    return null;
-                })
-                .filter(n -> n != null)
-                .toList();
+                        return null;
+                    })
+                    .filter(n -> n != null)
+                    .collect(Collectors.toList());
+
+            if (notifications.isEmpty()) {
+                String allFineMessage = "Все бюджеты в пределах лимитов";
+                notifications.add(allFineMessage);
+            }
+        } catch (SQLException e) {
+            System.err.println("Ошибка базы данных: " + e.getMessage());
+            notifications.add("Ошибка при проверке бюджета: " + e.getMessage());
+        }
         return notifications;
     }
 
-    /**
-     * Отправляет email-уведомление пользователю.
-     *
-     * @param user    пользователь
-     * @param subject тема письма
-     * @param message текст уведомления
-     */
+    public void sendImmediateNotification(User user, String subject, String message) {
+        sendEmailNotification(user, subject, message);
+        System.out.println("Уведомление: " + message);
+    }
+
+    public List<String> checkGoalsAndNotify(User user, User admin) {
+        try {
+            List<Goal> goals = goalService.getUserGoals(user);
+            if (goals.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return goals.stream()
+                    .map(goal -> {
+                        String progress = goalService.trackGoalProgress(goal.getId(), user, admin);
+                        if (progress.contains("Цель достигнута")) {
+                            String message = "Поздравляем! " + progress;
+                            sendEmailNotification(user, "Достижение цели", message);
+                            return message;
+                        } else if (progress.contains("Осталось накопить")) {
+                            double remaining = Double.parseDouble(progress.split("Осталось накопить: ")[1].split("\n")[0]);
+                            if (remaining < goal.getTargetAmount() * 0.1) {
+                                String message = "Вы близки к цели!\n" + progress;
+                                sendEmailNotification(user, "Прогресс по цели", message);
+                                return message;
+                            }
+                        }
+                        return null;
+                    })
+                    .filter(n -> n != null)
+                    .collect(Collectors.toList());
+        } catch (SQLException e) {
+            System.err.println("Ошибка при проверке бюджета: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    public String checkBudgetTransaction(User user, User admin) throws SQLException {
+        Budget budget = budgetService.findById(user.getId());
+        if (budget != null) {
+            return budgetService.checkBudget(budget.getId(), user, admin);
+        }
+        return null;
+    }
+
     private void sendEmailNotification(User user, String subject, String message) {
-        emailSender.sendEmail(user.getEmail(), subject, message);
+        emailSender.sendEmail(user.getEmail(),subject, message);
     }
 }

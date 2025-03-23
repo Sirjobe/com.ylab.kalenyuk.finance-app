@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+
+    <changeSet id="1" author="your_name">
+        <sql>CREATE SEQUENCE IF NOT EXISTS finance.transaction_seq START WITH 1 INCREMENT BY 1;</sql>
+    </changeSet>
+    <changeSet id="2" author="your_name">
+        <sql>
+            CREATE TABLE finance.transactions (
+                                                  id INTEGER DEFAULT nextval('finance.transaction_seq') PRIMARY KEY,
+                                                  amount DOUBLE PRECISION NOT NULL,
+                                                  description VARCHAR(255) NOT NULL,
+                                                  category VARCHAR(255) NOT NULL,
+                                                  transaction_date DATE NOT NULL,
+                                                  transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('INCOME', 'EXPENSE')),
+                                                  email VARCHAR(255) NOT NULL,
+                                                  CONSTRAINT fk_user_email FOREIGN KEY (email) REFERENCES finance.users(email)
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

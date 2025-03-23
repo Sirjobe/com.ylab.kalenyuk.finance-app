@@ -6,6 +6,7 @@ import com.ylab.repository.UserRepository;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,18 +44,23 @@ public class UserService {
         User user;
         String adminEmails = adminProperties.getProperty("admin.emails");
         boolean isAdmin = adminEmails != null && adminEmails.contains(email);
+        if(userRepository.findByEmail(email) !=null ){
+            throw  new IllegalArgumentException("Пользователь с таким email уже существует!");
+        }
         if (isAdmin) {
              user = new User(email, username, password,true);
+            userRepository.save(user);
         }
-        if(userRepository.findByEmail(email) !=null ){
-           throw  new IllegalArgumentException("Пользователь с таким email уже существует!");
-       }
-        user = new User(email, username, password,false);
-       if(!user.isPasswordValid()){
-           throw new IllegalArgumentException("Пароль должен быть длиннее 6 символов");
-       }
 
-       userRepository.save(user);
+        user = new User(email, username, password,false);
+
+        if(!user.isPasswordValid()){
+            throw new IllegalArgumentException("Пароль должен быть длиннее 6 символов");
+        }
+        userRepository.save(user);
+
+
+
     }
 
     /**
@@ -67,7 +73,7 @@ public class UserService {
      * @throws IllegalArgumentException если пользователь не найден
      */
     public void editUser(String email, String newEmail, String newUsername, String newPassword) {
-        User user = userRepository.findByEmail(email);
+        User user = findByEmail(email);
         if(user == null){
            throw  new IllegalArgumentException("Пользователь не найден");
         }
@@ -80,7 +86,10 @@ public class UserService {
             }
             user.setPassword(newPassword);
         }if (newEmail != null && !newEmail.equals(email)) {
-            if (userRepository.findByEmail(newEmail) != null) {
+            if (!new User(newEmail, "temp", "temp", false).getValidEmail(newEmail)) {
+                throw new IllegalArgumentException("Некорректный формат нового email");
+            }
+            if (findByEmail(newEmail) != null) {
                 throw new IllegalArgumentException("Новый email уже занят");
             }
             user = new User(newEmail, user.getUsername(), user.getPassword(), false);
@@ -97,9 +106,11 @@ public class UserService {
      * @throws IllegalArgumentException если данные неверны
      */
     public User login(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        if(user == null|| !user.getPassword().equals(password)){
+        User user = findByEmail(email);
+        if(user == null|| !user.getPassword().equals(password) ){
             throw new IllegalArgumentException("Неверный email или пароль");
+        }else if(user.isBlocked()){
+            throw new IllegalArgumentException ("Пользователь заблокирован");
         }
         return user;
     }
@@ -112,7 +123,7 @@ public class UserService {
      * @throws IllegalArgumentException если удаление невозможно
      */
     public void deleteUser(String email, User username) {
-        User userToDelete = userRepository.findByEmail(email);
+        User userToDelete = findByEmail(email);
         if(userToDelete == null){
             throw new IllegalArgumentException("Пользователь не найден");
         }
@@ -125,7 +136,7 @@ public class UserService {
     /**
      * Возвращает список всех пользователей (только для администраторов).
      */
-    public List<User> getAllUsers(User admin) {
+    public List<User> getAllUsers(User admin) throws SQLException {
         if (!admin.isAdmin()) {
             throw new IllegalArgumentException("Только администраторы могут просматривать список пользователей");
         }
@@ -135,7 +146,7 @@ public class UserService {
     /**
      * Блокирует пользователя по email (только для администраторов).
      */
-    public void blockUser(User admin, String userEmail) {
+    public boolean blockUser(User admin, String userEmail) {
         if (!admin.isAdmin()) {
             throw new IllegalArgumentException("Только администраторы могут блокировать пользователей");
         }
@@ -143,8 +154,15 @@ public class UserService {
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не найден");
         }
-        user.setBlocked(true);
-        userRepository.save(user);
+        if(user.isBlocked()){
+            user.setBlocked(false);
+            userRepository.save(user);
+            return false;
+        }else{
+            user.setBlocked(true);
+            userRepository.save(user);
+            return true;
+        }
     }
 
     /**
@@ -162,12 +180,15 @@ public class UserService {
     }
 
     /**
-     * Поиск пользователя по email (только для администраторов).
+     * Находит пользователя по email.
+     *
+     * @param email email пользователя
+     * @return пользователь или null, если пользователь не найден
      */
-
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
 
 
 }

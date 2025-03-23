@@ -6,6 +6,7 @@ import com.ylab.entity.TransactionType;
 import com.ylab.entity.User;
 import com.ylab.repository.BudgetRepository;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -42,13 +43,21 @@ public class BudgetService {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException("Месяц должен быть от 1 до 12");
         }
+        if (year < 1) {
+            throw new IllegalArgumentException("Год должен быть положительным");
+        }
 
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
         Budget budget = new Budget(limit, startDate, endDate, targetUser.getEmail());
-        budgetRepository.save(budget);
+        try {
+            budgetRepository.save(budget);
+        }catch (SQLException e) {
+            System.err.println("Ошибка базы данных: " + e.getMessage());
+        }
+
     }
 
     /**
@@ -58,7 +67,8 @@ public class BudgetService {
      * @param currentUser текущий пользователь (для проверки прав)
      * @throws IllegalArgumentException если бюджет не найден или нет прав
      */
-    public void deleteBudget(int budgetId, User currentUser) {
+    public void deleteBudget(int budgetId, User currentUser)  {
+        try {
         Budget budget = budgetRepository.findById(budgetId);
         if (budget == null) {
             throw new IllegalArgumentException("Бюджет не найден");
@@ -66,7 +76,12 @@ public class BudgetService {
         if (!budget.getEmail().equals(currentUser.getEmail()) && !currentUser.isAdmin()) {
             throw new IllegalArgumentException("Вы можете удалять только свои бюджеты");
         }
-        budgetRepository.deleteById(budgetId);
+
+            budgetRepository.deleteById(budgetId);
+        }catch (SQLException e) {
+            System.err.println("Ошибка базы данных: " + e.getMessage());
+        }
+
     }
 
     /**
@@ -75,7 +90,7 @@ public class BudgetService {
      * @param targetUser пользователь, чьи бюджеты нужно получить
      * @return список бюджетов
      */
-    public List<Budget> getUserBudgets(User admin, User targetUser) {
+    public List<Budget> getUserBudgets(User admin, User targetUser) throws SQLException {
         if (!admin.isAdmin() && !admin.getEmail().equals(targetUser.getEmail())) {
             throw new IllegalArgumentException("Вы можете просматривать только свои бюджеты");
         }
@@ -90,29 +105,43 @@ public class BudgetService {
      * @return сообщение о состоянии бюджета или null, если всё в порядке
      */
     public String checkBudget(int budgetId, User targetUser, User admin) {
-        Budget budget = budgetRepository.findById(budgetId);
-        if (budget == null) {
-            throw new IllegalArgumentException("Бюджет не найден");
-        }
-        if (!budget.getEmail().equals(targetUser.getEmail()) && !targetUser.isAdmin()) {
-            throw new IllegalArgumentException("Вы можете проверять только свои бюджеты");
-        }
+        try {
+            Budget budget = budgetRepository.findById(budgetId);
+            if (budget == null) {
+                return "Бюджет не найден";
+            }
+            if (!budget.getEmail().equals(targetUser.getEmail()) && !admin.isAdmin()) {
+                throw new IllegalArgumentException("Вы можете проверять только свои бюджеты");
+            }
 
-        List<Transaction> transactions = transactionService.getUserTransaction(
-                admin, targetUser, budget.getStart(), budget.getEnd(), null, TransactionType.EXPENSE
-        );
-        double totalExpenses = transactions.stream()
-                .mapToDouble(Transaction::getAmount)
-                .sum();
+            List<Transaction> transactions = transactionService.getTransactionsByUserAndPeriod(
+                    targetUser,
+                    budget.getStart(),
+                    budget.getEnd()
+            );
+            double totalExpenses = transactions.stream()
+                    .filter(t -> t.getType() == TransactionType.EXPENSE) // Исправлено
+                    .mapToDouble(Transaction::getAmount)
+                    .sum();
 
-
-        if (totalExpenses > budget.getLimit()) {
-            double overrun = totalExpenses - budget.getLimit();
-            return String.format("Бюджет превышен! Расходы: %.2f, Лимит: %.2f, Превышение: %.2f",
-                    totalExpenses, budget.getLimit(), overrun);
+            if (totalExpenses > budget.getLimit()) {
+                double overrun = totalExpenses - budget.getLimit();
+                return String.format("Бюджет превышен! Расходы: %.2f, Лимит: %.2f, Превышение: %.2f",
+                        totalExpenses, budget.getLimit(), overrun);
+            } else {
+                return String.format("Бюджет в пределах нормы: потрачено %.2f из %.2f",
+                        totalExpenses, budget.getLimit());
+            }
+        } catch (SQLException e) {
+            System.err.println("Ошибка базы данных: " + e.getMessage());
+            return "Ошибка при проверке бюджета: " + e.getMessage();
         }
-        return null;
     }
+
+    public Budget findById(int budgetId) throws SQLException {
+        return budgetRepository.findById(budgetId);
+    }
+
 
 
 

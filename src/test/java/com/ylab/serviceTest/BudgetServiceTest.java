@@ -9,14 +9,19 @@ import com.ylab.service.BudgetService;
 import com.ylab.service.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class BudgetServiceTest {
 
     @Mock
@@ -32,24 +37,50 @@ public class BudgetServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         user = new User("test@example.com", "testUser", "password123", false);
     }
 
     @Test
-    void testSetMonthlyBudget() {
-        budgetService.setMonthlyBudget(user, user, 1000.0, 2023, 1);
-        verify(budgetRepository).save(any(Budget.class));
+    void testSetMonthlyBudget() throws SQLException {
+        budgetService.setMonthlyBudget(user, user, 1000.0, 2025, 1);
+
+        verify(budgetRepository).save(argThat(budget ->
+                budget.getLimit() == 1000.0 &&
+                        budget.getStart().equals(LocalDate.of(2025, 1, 1)) &&
+                        budget.getEnd().equals(LocalDate.of(2025, 1, 31)) &&
+                        budget.getEmail().equals(user.getEmail())));
     }
 
     @Test
-    void testCheckBudgetExceed() {
-        Budget budget = new Budget(1000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 31), user.getEmail());
+    void testCheckBudgetExceed() throws SQLException {
+        Budget budget = new Budget(1000.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31), user.getEmail());
+        budget.setId(1);
+        Transaction expense = new Transaction(1500.0, "Test", "Food", LocalDate.of(2025, 1, 15), TransactionType.EXPENSE, user.getEmail());
+
         when(budgetRepository.findById(1)).thenReturn(budget);
-        when(transactionService.getUserTransaction(user, user, budget.getStart(), budget.getEnd(), null, TransactionType.EXPENSE))
-                .thenReturn(Collections.singletonList(new Transaction(1500.0, "Test", "Food", LocalDate.of(2023, 1, 15), TransactionType.EXPENSE, user.getEmail())));
+        when(transactionService.getTransactionsByUserAndPeriod(user, budget.getStart(), budget.getEnd()))
+                .thenReturn(Collections.singletonList(expense));
 
         String result = budgetService.checkBudget(1, user, user);
+        System.out.println("Result: " + result);
+        assertNotNull(result);
         assertTrue(result.contains("Бюджет превышен"));
+        assertTrue(result.contains("1500,00"));
+        assertTrue(result.contains("1000,00"));
+        assertTrue(result.contains("500,00"));
+    }
+
+    @Test
+    void testCheckBudgetWithinLimit() throws SQLException {
+        Budget budget = new Budget(1000.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31), user.getEmail());
+        budget.setId(1);
+        Transaction expense = new Transaction(500.0, "Test", "Food", LocalDate.of(2025, 1, 15), TransactionType.EXPENSE, user.getEmail());
+
+        when(budgetRepository.findById(1)).thenReturn(budget);
+        when(transactionService.getTransactionsByUserAndPeriod(user, budget.getStart(), budget.getEnd()))
+                .thenReturn(Collections.singletonList(expense));
+
+        String result = budgetService.checkBudget(1, user, user);
+        assertTrue(result.contains("Бюджет в пределах нормы: потрачено 500,00 из 1000,00"));
     }
 }

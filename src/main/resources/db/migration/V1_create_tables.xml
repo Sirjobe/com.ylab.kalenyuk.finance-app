@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+
+    <changeSet id="1" author="your_name">
+        <sql>CREATE SCHEMA IF NOT EXISTS finance;</sql>
+    </changeSet>
+
+    <changeSet id="2" author="your_name">
+        <sql>CREATE SEQUENCE IF NOT EXISTS finance.user_seq START WITH 1 INCREMENT BY 1;</sql>
+    </changeSet>
+
+    <changeSet id="3" author="your_name">
+        <sql>
+            CREATE TABLE finance.users (
+                                           id INTEGER DEFAULT nextval('finance.user_seq') NOT NULL,
+                                           email VARCHAR(255) NOT NULL,
+                                           username VARCHAR(255) NOT NULL,
+                                           password VARCHAR(255) NOT NULL,
+                                           is_admin BOOLEAN DEFAULT FALSE,
+                                           is_blocked BOOLEAN DEFAULT FALSE,
+                                           CONSTRAINT users_pkey PRIMARY KEY (id),
+                                           CONSTRAINT users_email_unique UNIQUE (email)
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>

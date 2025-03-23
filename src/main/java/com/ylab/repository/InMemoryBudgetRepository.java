@@ -5,10 +5,12 @@ import com.ylab.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class InMemoryBudgetRepository implements BudgetRepository {
     private List<Budget> budgets = new ArrayList<>();
+    private final AtomicInteger idGenerator = new AtomicInteger(0);
     /**
      * Сохраняет новый бюджет.
      *
@@ -16,9 +18,14 @@ public class InMemoryBudgetRepository implements BudgetRepository {
      */
     @Override
     public void save(Budget budget) {
-        budgets.removeIf(b -> b.getId() == budget.getId());
+        if (budget.getId() == 0) {
+            budget.setId(idGenerator.incrementAndGet());
+        } else {
+            budgets.removeIf(b -> b.getId() == budget.getId());
+        }
         budgets.add(budget);
     }
+
 
     /**
      * Удаляет бюджет по его идентификатору.
